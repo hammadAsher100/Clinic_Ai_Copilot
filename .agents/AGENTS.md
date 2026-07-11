@@ -61,15 +61,28 @@ and remaining work for the Clinical AI Co-Pilot hackathon project.
 **Auth**: JWT with bcrypt, demo users (clinician/demo2026, admin/admin2026)
 **Logging**: Structured Python logging with separate prediction/hitl/api loggers
 
-### Phase 4 — Frontend ✅ (4 HTML pages, dark-mode glassmorphism design)
+### Phase 4 — Frontend ✅ (8 HTML pages, modular architecture, dark-mode glassmorphism design)
 
-- `index.html` — Login with JWT auth flow
-- `upload.html` — 4-modality upload (X-ray drag-drop, vitals form, symptoms textarea, PDF)
-- `review.html` — HITL dashboard with confidence gauges, SHAP charts, Grad-CAM, approve/reject/edit
-- `report.html` — Report download with cases table
+**Modular Architecture (v2.0)**:
+- `dashboard.html` — Central hub with stats, recent activity, module navigation
+- `xray.html` — Dedicated X-ray analysis module with multi-file support
+- `heart.html` — Heart risk assessment module with 13 clinical features
+- `symptoms.html` — Symptom classifier module with NLP analysis
+- `documents.html` — Document upload and PDF extraction module
+- `cases.html` — Case management with listing and status tracking
+- `review.html` — HITL review dashboard (enhanced from original)
+- `report.html` — Report management (enhanced from original)
+- `upload.html` — Legacy all-in-one page (deprecated, kept for compatibility)
+- `index.html` — Login page (updated to redirect to dashboard)
+
+**Documentation**:
+- `UI_MODULES.md` — Complete module architecture documentation
+- `QUICK_START.md` — User quick reference guide
+- `SITEMAP.md` — Visual navigation map and flow diagrams
 
 **Design system**: Inter font, navy/teal/amber/coral palette, glassmorphism cards, micro-animations
 **Charts**: Vanilla JS Canvas — SHAP bar charts, confidence gauges, top-3 condition rankings (no external lib)
+**Navigation**: Modular routing with case ID preservation via URL parameters
 
 ---
 

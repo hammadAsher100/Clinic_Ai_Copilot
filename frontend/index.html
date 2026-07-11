@@ -48,7 +48,7 @@
   <script>
     // Redirect if already authenticated
     if (isAuthenticated()) {
-      window.location.href = '/static/frontend/upload.html';
+      window.location.href = '/static/frontend/dashboard.html';
     }
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -65,7 +65,7 @@
           document.getElementById('username').value,
           document.getElementById('password').value
         );
-        window.location.href = '/static/frontend/upload.html';
+        window.location.href = '/static/frontend/dashboard.html';
       } catch (err) {
         errorEl.textContent = err.message;
         errorEl.classList.remove('hidden');

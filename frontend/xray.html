@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Chest X-Ray Analysis — AI-powered pneumonia detection with Grad-CAM visualization.">
+  <title>Chest X-Ray Analysis — Clinical AI Co-Pilot</title>
+  <link rel="stylesheet" href="/static/frontend/css/styles.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- ── Navbar ──────────────────────────────────────────────────── -->
+    <nav class="navbar">
+      <div class="container">
+        <a href="/static/frontend/dashboard.html" class="navbar-brand">
+          <div class="logo-icon">🏥</div>
+          Clinical AI Co-Pilot
+        </a>
+        <ul class="navbar-links">
+          <li><a href="/static/frontend/dashboard.html">Dashboard</a></li>
+          <li><a href="/static/frontend/cases.html">Cases</a></li>
+          <li><a href="/static/frontend/review.html">Review</a></li>
+          <li><a href="/static/frontend/report.html">Reports</a></li>
+        </ul>
+        <div class="user-badge">
+          <span class="dot"></span>
+          <span id="user-display">Clinician</span>
+          <a href="#" onclick="logout()" style="margin-left:8px;font-size:0.75rem;">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container section">
+      <!-- ── Module Header ────────────────────────────────────────── -->
+      <div class="section-header">
+        <div class="d-flex align-center gap-2" style="flex-wrap:wrap;">
+          <a href="/static/frontend/dashboard.html" style="color:var(--text-muted);font-size:1.2rem;">←</a>
+          <div>
+            <div class="d-flex align-center gap-2" style="flex-wrap:wrap;">
+              <div class="card-icon blue" style="width:48px;height:48px;font-size:1.5rem;">🫁</div>
+              <div>
+                <h1 style="margin-bottom:4px;">Chest X-Ray Analysis</h1>
+                <span class="badge badge-blue">CNN · MobileNetV2 · Pneumonia Detection</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="mt-2">Upload chest X-ray images for AI-powered pneumonia detection with explainable Grad-CAM heatmap visualization</p>
+      </div>
+
+      <!-- ── Case Selection ───────────────────────────────────────── -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <div class="card-icon teal">📋</div>
+          <div>
+            <h3>Case Information</h3>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="case-select">Existing Case</label>
+            <select id="case-select" class="form-control" onchange="selectCase()">
+              <option value="">Create New Case...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="patient-name">Patient Name</label>
+            <input type="text" id="patient-name" class="form-control" placeholder="Anonymous" value="Anonymous">
+          </div>
+          <div class="form-group">
+            <label>Current Case ID</label>
+            <input type="text" id="case-id-display" class="form-control" readonly placeholder="Not created" value="Not created">
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Upload Section ────────────────────────────────────────── -->
+      <div class="grid-2">
+        <!-- Upload Area -->
+        <div class="card">
+          <h3 class="mb-2">Upload X-Ray Image</h3>
+          <div class="file-upload" id="xray-dropzone">
+            <input type="file" id="xray-file" accept="image/jpeg,image/png,image/jpg" onchange="handleFileSelect()" multiple>
+            <div class="file-upload-icon">📷</div>
+            <div class="file-upload-text">Drop chest X-ray images here or click to browse</div>
+            <div class="file-upload-hint">Accepts: JPEG, PNG | Max size: 10 MB | Multiple files supported</div>
+          </div>
+          
+          <!-- Preview Area -->
+          <div id="preview-container" class="mt-2" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;"></div>
+
+          <div class="d-flex gap-1 mt-2">
+            <button class="btn btn-primary flex-1" id="analyze-btn" onclick="handleAnalyze()" disabled>
+              <span class="spinner"></span>
+              <span class="btn-text">🔬 Analyze X-Ray</span>
+            </button>
+            <button class="btn btn-secondary" onclick="clearUpload()">Clear</button>
+          </div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(78, 140, 255, 0.05), rgba(0, 212, 170, 0.05));">
+          <h3 class="mb-2">About This Model</h3>
+          <div style="display:flex;flex-direction:column;gap:12px;font-size:0.85rem;">
+            <div>
+              <strong style="color:var(--accent-blue);">Architecture:</strong>
+              <p class="text-muted" style="margin-top:4px;">MobileNetV2-based convolutional neural network with frozen feature extraction layers and custom classification head.</p>
+            </div>
+            <div>
+              <strong style="color:var(--accent-blue);">Training Data:</strong>
+              <p class="text-muted" style="margin-top:4px;">Chest X-ray Pneumonia dataset with balanced class weighting for improved sensitivity.</p>
+            </div>
+            <div>
+              <strong style="color:var(--accent-blue);">Explainability:</strong>
+              <p class="text-muted" style="margin-top:4px;">Grad-CAM (Gradient-weighted Class Activation Mapping) highlights regions of interest contributing to the prediction.</p>
+            </div>
+            <div>
+              <strong style="color:var(--accent-blue);">Output:</strong>
+              <p class="text-muted" style="margin-top:4px;">Binary classification: NORMAL / PNEUMONIA with confidence score and visual heatmap overlay.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Results Section ───────────────────────────────────────── -->
+      <div id="results-section" class="hidden mt-3">
+        <div class="section-header">
+          <h2>Analysis Results</h2>
+          <p>AI-generated predictions with explainability visualizations</p>
+        </div>
+        <div id="results-grid" class="grid-2"></div>
+      </div>
+
+      <!-- ── Next Steps ────────────────────────────────────────────── -->
+      <div class="card mt-3 hidden" id="next-steps" style="text-align:center;">
+        <h3 class="mb-2">Analysis Complete</h3>
+        <p class="text-muted mb-3">Proceed to additional analyses or review your results</p>
+        <div class="d-flex gap-2" style="justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-secondary" onclick="continueToHeart()">❤️ Heart Risk Assessment</button>
+          <button class="btn btn-secondary" onclick="continueToSymptoms()">💬 Symptom Classifier</button>
+          <button class="btn btn-primary" onclick="continueToReview()">Review Results →</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/frontend/js/api.js"></script>
+  <script src="/static/frontend/js/charts.js"></script>
+  <script>
+    if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
+
+    let currentCaseId = null;
+    let selectedFiles = [];
+    let analysisResults = [];
+
+    getCurrentUser().then(user => {
+      document.getElementById('user-display').textContent = user.full_name;
+    }).catch(() => {});
+
+    // Load cases for dropdown
+    (async function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlCaseId = urlParams.get('case_id');
+
+      try {
+        const cases = await listCases();
+        const select = document.getElementById('case-select');
+        cases.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = `#${c.id} — ${c.status}`;
+          select.appendChild(opt);
+        });
+
+        if (urlCaseId) {
+          select.value = urlCaseId;
+          selectCase();
+        }
+      } catch (err) {
+        console.error('Failed to load cases:', err);
+      }
+    })();
+
+    function selectCase() {
+      const caseId = document.getElementById('case-select').value;
+      if (caseId) {
+        currentCaseId = parseInt(caseId);
+        document.getElementById('case-id-display').value = `#${caseId}`;
+      } else {
+        currentCaseId = null;
+        document.getElementById('case-id-display').value = 'Not created';
+      }
+    }
+
+    function handleFileSelect() {
+      const input = document.getElementById('xray-file');
+      selectedFiles = Array.from(input.files);
+      
+      if (selectedFiles.length === 0) return;
+
+      // Render previews
+      const container = document.getElementById('preview-container');
+      container.innerHTML = '';
+
+      selectedFiles.forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const div = document.createElement('div');
+          div.style.cssText = 'position:relative;border-radius:8px;overflow:hidden;border:2px solid var(--border-subtle);';
+          div.innerHTML = `
+            <img src="${e.target.result}" style="width:100%;height:150px;object-fit:cover;" alt="Preview ${idx + 1}">
+            <button onclick="removeFile(${idx})" style="position:absolute;top:4px;right:4px;background:rgba(255,107,107,0.9);color:white;border:none;border-radius:4px;padding:4px 8px;font-size:0.7rem;cursor:pointer;">✕</button>
+          `;
+          container.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      document.getElementById('analyze-btn').disabled = false;
+    }
+
+    function removeFile(idx) {
+      selectedFiles.splice(idx, 1);
+      const dt = new DataTransfer();
+      selectedFiles.forEach(f => dt.items.add(f));
+      document.getElementById('xray-file').files = dt.files;
+      handleFileSelect();
+    }
+
+    function clearUpload() {
+      selectedFiles = [];
+      document.getElementById('xray-file').value = '';
+      document.getElementById('preview-container').innerHTML = '';
+      document.getElementById('analyze-btn').disabled = true;
+    }
+
+    async function handleAnalyze() {
+      if (selectedFiles.length === 0) {
+        return showToast('Please select at least one X-ray image', 'error');
+      }
+
+      const btn = document.getElementById('analyze-btn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      analysisResults = [];
+
+      try {
+        for (const file of selectedFiles) {
+          showLoading(`Analyzing ${file.name}...`);
+          const result = await predictImage(file, currentCaseId, document.getElementById('patient-name').value);
+          
+          if (!currentCaseId) {
+            currentCaseId = result.case_id;
+            document.getElementById('case-id-display').value = `#${currentCaseId}`;
+            document.getElementById('case-select').value = currentCaseId;
+          }
+
+          analysisResults.push({ ...result, filename: file.name });
+        }
+
+        hideLoading();
+        renderResults();
+        showToast(`${selectedFiles.length} X-ray(s) analyzed successfully`, 'success');
+        document.getElementById('next-steps').classList.remove('hidden');
+
+      } catch (err) {
+        hideLoading();
+        showToast(err.message, 'error');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
+    function renderResults() {
+      const section = document.getElementById('results-section');
+      const grid = document.getElementById('results-grid');
+      
+      section.classList.remove('hidden');
+      grid.innerHTML = '';
+
+      analysisResults.forEach((result, idx) => {
+        const isPositive = result.prediction === 'PNEUMONIA';
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-icon ${isPositive ? 'coral' : 'teal'}">${isPositive ? '⚠️' : '✓'}</div>
+            <div>
+              <h4>${result.filename}</h4>
+              <span class="badge badge-${isPositive ? 'coral' : 'teal'}">${result.prediction}</span>
+            </div>
+          </div>
+          <div id="gauge-${idx}" class="mb-2"></div>
+          <div class="confidence-label">
+            <span>Confidence</span>
+            <span style="font-weight:700;color:var(--accent-${isPositive ? 'coral' : 'teal'});">${(result.confidence * 100).toFixed(1)}%</span>
+          </div>
+          <div class="progress-bar mb-2">
+            <div class="fill" style="width:${result.confidence * 100}%;background:var(--accent-${isPositive ? 'coral' : 'teal'});"></div>
+          </div>
+          ${result.gradcam_url ? `
+            <div class="mt-2">
+              <strong style="font-size:0.85rem;color:var(--text-secondary);display:block;margin-bottom:6px;">Grad-CAM Heatmap:</strong>
+              <img src="${result.gradcam_url}" style="width:100%;border-radius:8px;border:1px solid var(--border-subtle);" alt="Grad-CAM heatmap">
+              <p class="text-muted" style="font-size:0.75rem;margin-top:6px;">
+                Highlighted regions indicate areas the model focused on for classification.
+              </p>
+            </div>
+          ` : ''}
+        `;
+        grid.appendChild(card);
+
+        // Render gauge after DOM update
+        requestAnimationFrame(() => {
+          renderConfidenceGauge(`gauge-${idx}`, result.confidence, result.prediction);
+        });
+      });
+    }
+
+    function continueToHeart() {
+      window.location.href = `/static/frontend/heart.html?case_id=${currentCaseId}`;
+    }
+
+    function continueToSymptoms() {
+      window.location.href = `/static/frontend/symptoms.html?case_id=${currentCaseId}`;
+    }
+
+    function continueToReview() {
+      window.location.href = `/static/frontend/review.html?case_id=${currentCaseId}`;
+    }
+
+    // Drag-and-drop
+    const dropzone = document.getElementById('xray-dropzone');
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      const dt = new DataTransfer();
+      Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+      document.getElementById('xray-file').files = dt.files;
+      handleFileSelect();
+    });
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chest X-Ray Analysis — Clinical AI Co-Pilot</title>
+  <link rel="stylesheet" href="/static/frontend/css/styles.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <nav class="navbar">
+      <div class="container">
+        <a href="/static/frontend/dashboard.html" class="navbar-brand">
+          <div class="logo-icon">🏥</div>
+          Clinical AI Co-Pilot
+        </a>
+        <ul class="navbar-links">
+          <li><a href="/static/frontend/dashboard.html">Dashboard</a></li>
+          <li><a href="/static/frontend/cases.html">Cases</a></li>
+          <li><a href="/static/frontend/review.html">Review</a></li>
+        </ul>
+        <div class="user-badge">
+          <span class="dot"></span>
+          <span id="user-display">Clinician</span>
+          <a href="#" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container section">
+      <div class="section-header">
+        <div class="d-flex align-center gap-2">
+          <a href="/static/frontend/dashboard.html" style="color:var(--text-muted);">←</a>
+          <div class="card-icon blue" style="width:48px;height:48px;">🫁</div>
+          <div>
+            <h1>Chest X-Ray Analysis</h1>
+            <span class="badge badge-blue">CNN · Pneumonia Detection</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="case-select">Case</label>
+            <select id="case-select" class="form-control" onchange="selectCase()">
+              <option value="">Create New...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="patient-name">Patient</label>
+            <input type="text" id="patient-name" class="form-control" value="Anonymous">
+          </div>
+          <div class="form-group">
+            <label>Case ID</label>
+            <input type="text" id="case-id-display" class="form-control" readonly value="Not created">
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 class="mb-2">Upload X-Ray</h3>
+          <div class="file-upload" id="xray-dropzone">
+            <input type="file" id="xray-file" accept="image/*" onchange="handleFileSelect()" multiple>
+            <div class="file-upload-icon">📷</div>
+            <div class="file-upload-text">Drop X-ray images here</div>
+          </div>
+          <div id="preview-container" class="mt-2" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;"></div>
+          <button class="btn btn-primary btn-block mt-2" id="analyze-btn" onclick="handleAnalyze()" disabled>
+            <span class="spinner"></span><span class="btn-text">Analyze</span>
+          </button>
+        </div>
+
+        <div class="card">
+          <h3 class="mb-2">Model Info</h3>
+          <p class="text-muted">MobileNetV2 CNN with Grad-CAM visualization for pneumonia detection.</p>
+        </div>
+      </div>
+
+      <div id="results-section" class="hidden mt-3">
+        <h2>Results</h2>
+        <div id="results-grid" class="grid-2"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/frontend/js/api.js"></script>
+  <script src="/static/frontend/js/charts.js"></script>
+  <script>
+    if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
+    
+    let currentCaseId = null;
+    let selectedFiles = [];
+
+    getCurrentUser().then(u => document.getElementById('user-display').textContent = u.full_name).catch(()=>{});
+
+    (async function() {
+      const params = new URLSearchParams(location.search);
+      const caseId = params.get('case_id');
+      const cases = await listCases();
+      const select = document.getElementById('case-select');
+      cases.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `#${c.id}`;
+        select.appendChild(opt);
+      });
+      if (caseId) { select.value = caseId; selectCase(); }
+    })();
+
+    function selectCase() {
+      const id = document.getElementById('case-select').value;
+      currentCaseId = id ? parseInt(id) : null;
+      document.getElementById('case-id-display').value = id ? `#${id}` : 'Not created';
+    }
+
+    function handleFileSelect() {
+      const input = document.getElementById('xray-file');
+      selectedFiles = Array.from(input.files);
+      const container = document.getElementById('preview-container');
+      container.innerHTML = '';
+      selectedFiles.forEach((file, i) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const div = document.createElement('div');
+          div.innerHTML = `<img src="${e.target.result}" style="width:100%;height:150px;object-fit:cover;border-radius:8px;">`;
+          container.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+      document.getElementById('analyze-btn').disabled = false;
+    }
+
+    async function handleAnalyze() {
+      const btn = document.getElementById('analyze-btn');
+      btn.classList.add('loading'); btn.disabled = true;
+      const results = [];
+      try {
+        for (const file of selectedFiles) {
+          showLoading(`Analyzing ${file.name}...`);
+          const r = await predictImage(file, currentCaseId, document.getElementById('patient-name').value);
+          if (!currentCaseId) {
+            currentCaseId = r.case_id;
+            document.getElementById('case-id-display').value = `#${currentCaseId}`;
+          }
+          results.push({...r, filename: file.name});
+        }
+        hideLoading();
+        renderResults(results);
+        showToast('Analysis complete', 'success');
+      } catch (err) {
+        hideLoading(); showToast(err.message, 'error');
+      } finally {
+        btn.classList.remove('loading'); btn.disabled = false;
+      }
+    }
+
+    function renderResults(results) {
+      document.getElementById('results-section').classList.remove('hidden');
+      const grid = document.getElementById('results-grid');
+      grid.innerHTML = '';
+      results.forEach((r, i) => {
+        const isPos = r.prediction === 'PNEUMONIA';
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h4>${r.filename}</h4>
+          <div class="badge badge-${isPos?'coral':'teal'}">${r.prediction}</div>
+          <div id="gauge-${i}"></div>
+          <div class="progress-bar mt-2"><div class="fill" style="width:${r.confidence*100}%"></div></div>
+          ${r.gradcam_url ? `<img src="${r.gradcam_url}" class="explainability-img mt-2">` : ''}
+        `;
+        grid.appendChild(card);
+        requestAnimationFrame(() => renderConfidenceGauge(`gauge-${i}`, r.confidence));
+      });
+    }
+  </script>
+</body>
+</html>

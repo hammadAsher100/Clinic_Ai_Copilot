@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Upload — Clinical AI Co-Pilot</title>
+  <link rel="stylesheet" href="/static/frontend/css/styles.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <nav class="navbar">
+      <div class="container">
+        <a href="/static/frontend/dashboard.html" class="navbar-brand">
+          <div class="logo-icon">🏥</div>
+          Clinical AI Co-Pilot
+        </a>
+        <ul class="navbar-links">
+          <li><a href="/static/frontend/dashboard.html">Dashboard</a></li>
+          <li><a href="/static/frontend/cases.html">Cases</a></li>
+          <li><a href="/static/frontend/review.html">Review</a></li>
+        </ul>
+        <div class="user-badge">
+          <span class="dot"></span>
+          <span id="user-display">Clinician</span>
+          <a href="#" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container section">
+      <div class="section-header">
+        <div class="d-flex align-center gap-2">
+          <a href="/static/frontend/dashboard.html" style="color:var(--text-muted);">←</a>
+          <div class="card-icon amber" style="width:48px;height:48px;">📄</div>
+          <div>
+            <h1>Medical Document Upload</h1>
+            <span class="badge badge-amber">PDF Parser · Text Extraction</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="case-select">Case</label>
+            <select id="case-select" class="form-control" onchange="selectCase()">
+              <option value="">Create New...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Case ID</label>
+            <input type="text" id="case-id-display" class="form-control" readonly value="Not created">
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 class="mb-2">Upload Documents</h3>
+          <div class="file-upload" id="pdf-dropzone">
+            <input type="file" id="pdf-file" accept="application/pdf" onchange="handleFileSelect()" multiple>
+            <div class="file-upload-icon">📁</div>
+            <div class="file-upload-text">Drop PDF documents here</div>
+            <div class="file-upload-hint">Clinical notes, discharge summaries, lab reports</div>
+          </div>
+          <div id="file-list" class="mt-2"></div>
+          <button class="btn btn-primary btn-block mt-2" id="upload-btn" onclick="handleUpload()" disabled>
+            <span class="spinner"></span><span class="btn-text">Extract & Process</span>
+          </button>
+        </div>
+
+        <div class="card">
+          <h3 class="mb-2">Supported Documents</h3>
+          <ul class="text-muted" style="line-height:1.8;">
+            <li>Discharge summaries</li>
+            <li>Clinical notes</li>
+            <li>Lab reports</li>
+            <li>Radiology reports</li>
+            <li>Patient history forms</li>
+          </ul>
+        </div>
+      </div>
+
+      <div id="results-section" class="hidden mt-3">
+        <h2>Extraction Results</h2>
+        <div id="results-grid" class="grid-2"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/frontend/js/api.js"></script>
+  <script>
+    if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
+    let currentCaseId = null;
+    let selectedFiles = [];
+    getCurrentUser().then(u => document.getElementById('user-display').textContent = u.full_name).catch(()=>{});
+
+    (async function() {
+      const params = new URLSearchParams(location.search);
+      const caseId = params.get('case_id');
+      const cases = await listCases();
+      const select = document.getElementById('case-select');
+      cases.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `#${c.id}`;
+        select.appendChild(opt);
+      });
+      if (caseId) { select.value = caseId; selectCase(); }
+    })();
+
+    function selectCase() {
+      const id = document.getElementById('case-select').value;
+      currentCaseId = id ? parseInt(id) : null;
+      document.getElementById('case-id-display').value = id ? `#${id}` : 'Not created';
+    }
+
+    function handleFileSelect() {
+      selectedFiles = Array.from(document.getElementById('pdf-file').files);
+      const list = document.getElementById('file-list');
+      list.innerHTML = '';
+      selectedFiles.forEach((f, i) => {
+        list.innerHTML += `<div style="padding:8px;background:var(--bg-primary);border-radius:6px;margin-bottom:4px;font-size:0.85rem;">${f.name}</div>`;
+      });
+      document.getElementById('upload-btn').disabled = false;
+    }
+
+    async function handleUpload() {
+      const btn = document.getElementById('upload-btn');
+      btn.classList.add('loading'); btn.disabled = true;
+      const results = [];
+      try {
+        for (const file of selectedFiles) {
+          showLoading(`Processing ${file.name}...`);
+          const r = await uploadPDF(file, currentCaseId, 'Anonymous');
+          if (!currentCaseId) {
+            currentCaseId = r.case_id;
+            document.getElementById('case-id-display').value = `#${currentCaseId}`;
+          }
+          results.push({...r, filename: file.name});
+        }
+        hideLoading();
+        renderResults(results);
+        showToast('Documents processed', 'success');
+      } catch (err) {
+        hideLoading(); showToast(err.message, 'error');
+      } finally {
+        btn.classList.remove('loading'); btn.disabled = false;
+      }
+    }
+
+    function renderResults(results) {
+      document.getElementById('results-section').classList.remove('hidden');
+      const grid = document.getElementById('results-grid');
+      grid.innerHTML = '';
+      results.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h4>${r.filename}</h4>
+          <p class="text-muted">${r.num_pages} pages extracted</p>
+          <details><summary>View Text</summary><pre style="font-size:0.75rem;max-height:200px;overflow:auto;">${r.raw_text || 'No text'}</pre></details>
+        `;
+        grid.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>

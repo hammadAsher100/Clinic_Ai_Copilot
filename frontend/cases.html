@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case Management — Clinical AI Co-Pilot</title>
+  <link rel="stylesheet" href="/static/frontend/css/styles.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <nav class="navbar">
+      <div class="container">
+        <a href="/static/frontend/dashboard.html" class="navbar-brand">
+          <div class="logo-icon">🏥</div>
+          Clinical AI Co-Pilot
+        </a>
+        <ul class="navbar-links">
+          <li><a href="/static/frontend/dashboard.html">Dashboard</a></li>
+          <li><a href="/static/frontend/cases.html" class="active">Cases</a></li>
+          <li><a href="/static/frontend/review.html">Review</a></li>
+          <li><a href="/static/frontend/report.html">Reports</a></li>
+        </ul>
+        <div class="user-badge">
+          <span class="dot"></span>
+          <span id="user-display">Clinician</span>
+          <a href="#" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container section">
+      <div class="section-header">
+        <div class="d-flex align-center justify-between" style="flex-wrap:wrap;gap:12px;">
+          <div>
+            <h1>Case Management</h1>
+            <p>View and manage all clinical cases</p>
+          </div>
+          <button class="btn btn-primary" onclick="createNewCase()">
+            ➕ New Case
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid-4 mb-3">
+        <div class="stat-card">
+          <div class="stat-value" id="total">0</div>
+          <div class="stat-label">Total Cases</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="pending">0</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="in_review">0</div>
+          <div class="stat-label">In Review</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="completed">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+      </div>
+
+      <!-- Cases Table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon teal">📋</div>
+          <h3>All Cases</h3>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border-subtle);text-align:left;">
+                <th style="padding:10px;color:var(--text-muted);">ID</th>
+                <th style="padding:10px;color:var(--text-muted);">Status</th>
+                <th style="padding:10px;color:var(--text-muted);">Created</th>
+                <th style="padding:10px;color:var(--text-muted);">Updated</th>
+                <th style="padding:10px;color:var(--text-muted);">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cases-table">
+              <tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-muted);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/frontend/js/api.js"></script>
+  <script>
+    if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
+    getCurrentUser().then(u => document.getElementById('user-display').textContent = u.full_name).catch(()=>{});
+
+    (async function loadCases() {
+      try {
+        const cases = await listCases();
+        
+        // Update stats
+        document.getElementById('total').textContent = cases.length;
+        document.getElementById('pending').textContent = cases.filter(c => c.status === 'pending').length;
+        document.getElementById('in_review').textContent = cases.filter(c => c.status === 'in_review').length;
+        document.getElementById('completed').textContent = cases.filter(c => c.status === 'completed').length;
+
+        // Render table
+        const tbody = document.getElementById('cases-table');
+        if (cases.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-muted);">No cases found</td></tr>';
+          return;
+        }
+
+        const statusColors = {pending:'badge-amber', in_review:'badge-blue', completed:'badge-teal'};
+        let html = '';
+        cases.forEach(c => {
+          const created = new Date(c.created_at).toLocaleString();
+          const updated = new Date(c.updated_at).toLocaleString();
+          html += `
+            <tr style="border-bottom:1px solid var(--border-subtle);">
+              <td style="padding:10px;font-weight:600;">#${c.id}</td>
+              <td style="padding:10px;"><span class="badge ${statusColors[c.status]}">${c.status}</span></td>
+              <td style="padding:10px;color:var(--text-secondary);">${created}</td>
+              <td style="padding:10px;color:var(--text-secondary);">${updated}</td>
+              <td style="padding:10px;">
+                <div class="d-flex gap-1">
+                  <a href="/static/frontend/review.html?case_id=${c.id}" class="btn btn-secondary btn-sm">Review</a>
+                  <button class="btn btn-secondary btn-sm" onclick="addAnalysis(${c.id})">+ Analysis</button>
+                </div>
+              </td>
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+      } catch (err) {
+        showToast('Failed to load cases', 'error');
+      }
+    })();
+
+    async function createNewCase() {
+      const name = prompt('Patient name (optional):', 'Anonymous');
+      if (name === null) return;
+      try {
+        showLoading('Creating case...');
+        const result = await createCase(name, null, null);
+        hideLoading();
+        showToast(`Case #${result.id} created`, 'success');
+        if (confirm('Start with X-Ray analysis?')) {
+          window.location.href = `/static/frontend/xray.html?case_id=${result.id}`;
+        } else {
+          location.reload();
+        }
+      } catch (err) {
+        hideLoading();
+        showToast(err.message, 'error');
+      }
+    }
+
+    function addAnalysis(caseId) {
+      const modules = {
+        '1': `/static/frontend/xray.html?case_id=${caseId}`,
+        '2': `/static/frontend/heart.html?case_id=${caseId}`,
+        '3': `/static/frontend/symptoms.html?case_id=${caseId}`,
+        '4': `/static/frontend/documents.html?case_id=${caseId}`
+      };
+      const choice = prompt('Select module:\n1=X-Ray\n2=Heart\n3=Symptoms\n4=Documents', '1');
+      if (modules[choice]) window.location.href = modules[choice];
+    }
+  </script>
+</body>
+</html>

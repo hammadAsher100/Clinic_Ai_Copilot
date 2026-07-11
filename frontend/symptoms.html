@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Symptom Classifier — Clinical AI Co-Pilot</title>
+  <link rel="stylesheet" href="/static/frontend/css/styles.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <nav class="navbar">
+      <div class="container">
+        <a href="/static/frontend/dashboard.html" class="navbar-brand">
+          <div class="logo-icon">🏥</div>
+          Clinical AI Co-Pilot
+        </a>
+        <ul class="navbar-links">
+          <li><a href="/static/frontend/dashboard.html">Dashboard</a></li>
+          <li><a href="/static/frontend/cases.html">Cases</a></li>
+          <li><a href="/static/frontend/review.html">Review</a></li>
+        </ul>
+        <div class="user-badge">
+          <span class="dot"></span>
+          <span id="user-display">Clinician</span>
+          <a href="#" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container section">
+      <div class="section-header">
+        <div class="d-flex align-center gap-2">
+          <a href="/static/frontend/dashboard.html" style="color:var(--text-muted);">←</a>
+          <div class="card-icon purple" style="width:48px;height:48px;">💬</div>
+          <div>
+            <h1>Symptom Classifier</h1>
+            <span class="badge badge-purple">BiLSTM · 24 Conditions</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="case-select">Case</label>
+            <select id="case-select" class="form-control" onchange="selectCase()">
+              <option value="">Create New...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Case ID</label>
+            <input type="text" id="case-id-display" class="form-control" readonly value="Not created">
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 class="mb-2">Symptom Description</h3>
+          <div class="form-group">
+            <label for="symptoms">Describe patient symptoms in natural language</label>
+            <textarea id="symptoms" class="form-control" rows="8" placeholder="e.g., Patient reports persistent headache, dizziness, and blurred vision for the past two weeks. Symptoms worsen in the evening..."></textarea>
+          </div>
+          <button class="btn btn-primary btn-block" id="classify-btn" onclick="handleClassify()">
+            <span class="spinner"></span><span class="btn-text">Classify Symptoms</span>
+          </button>
+        </div>
+
+        <div class="card">
+          <h3 class="mb-2">Model Info</h3>
+          <p class="text-muted">Bidirectional LSTM for natural language symptom classification across 24 disease categories.</p>
+          <div class="mt-3">
+            <strong style="font-size:0.85rem;">Sample Conditions:</strong>
+            <div class="d-flex flex-wrap gap-1 mt-2">
+              <span class="badge badge-purple">Migraine</span>
+              <span class="badge badge-purple">Diabetes</span>
+              <span class="badge badge-purple">Hypertension</span>
+              <span class="badge badge-purple">Asthma</span>
+              <span class="badge badge-purple">Pneumonia</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="results-section" class="hidden mt-3">
+        <h2>Classification Results</h2>
+        <div class="card">
+          <div id="result-content"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/frontend/js/api.js"></script>
+  <script src="/static/frontend/js/charts.js"></script>
+  <script>
+    if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
+    let currentCaseId = null;
+    getCurrentUser().then(u => document.getElementById('user-display').textContent = u.full_name).catch(()=>{});
+
+    (async function() {
+      const params = new URLSearchParams(location.search);
+      const caseId = params.get('case_id');
+      const cases = await listCases();
+      const select = document.getElementById('case-select');
+      cases.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `#${c.id}`;
+        select.appendChild(opt);
+      });
+      if (caseId) { select.value = caseId; selectCase(); }
+    })();
+
+    function selectCase() {
+      const id = document.getElementById('case-select').value;
+      currentCaseId = id ? parseInt(id) : null;
+      document.getElementById('case-id-display').value = id ? `#${id}` : 'Not created';
+    }
+
+    async function handleClassify() {
+      const text = document.getElementById('symptoms').value.trim();
+      if (!text || text.length < 10) return showToast('Please enter a detailed symptom description', 'error');
+      
+      const btn = document.getElementById('classify-btn');
+      btn.classList.add('loading'); btn.disabled = true;
+      try {
+        const result = await predictText(text, currentCaseId);
+        if (!currentCaseId) {
+          currentCaseId = result.case_id;
+          document.getElementById('case-id-display').value = `#${currentCaseId}`;
+        }
+        renderResult(result);
+        showToast('Classification complete', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.classList.remove('loading'); btn.disabled = false;
+      }
+    }
+
+    function renderResult(r) {
+      document.getElementById('results-section').classList.remove('hidden');
+      document.getElementById('result-content').innerHTML = `
+        <div class="d-flex align-center gap-2 mb-2">
+          <div class="card-icon purple" style="width:40px;height:40px;">🎯</div>
+          <div>
+            <h3>${r.condition}</h3>
+            <span class="badge badge-purple">Confidence: ${(r.confidence*100).toFixed(1)}%</span>
+          </div>
+        </div>
+        <div id="gauge"></div>
+        <div class="mt-3">
+          <strong style="font-size:0.9rem;">Top 3 Predicted Conditions:</strong>
+          <div id="top3" class="mt-2"></div>
+        </div>
+      `;
+      requestAnimationFrame(() => {
+        renderConfidenceGauge('gauge', r.confidence);
+        if (r.top_3) renderTop3Conditions('top3', r.top_3);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -104,6 +104,6 @@ def health():
 # ── Root redirect to frontend ───────────────────────────────────────────
 @app.get("/", include_in_schema=False)
 async def root():
-    """Redirect root to frontend."""
+    """Redirect root to dashboard."""
     from fastapi.responses import RedirectResponse
-    return RedirectResponse(url="/static/frontend/index.html")
+    return RedirectResponse(url="/static/frontend/dashboard.html")

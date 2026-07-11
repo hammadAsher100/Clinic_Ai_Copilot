@@ -12,14 +12,15 @@
     <!-- ── Navbar ──────────────────────────────────────────────────── -->
     <nav class="navbar">
       <div class="container">
-        <a href="/static/frontend/upload.html" class="navbar-brand">
+        <a href="/static/frontend/dashboard.html" class="navbar-brand">
           <div class="logo-icon">🏥</div>
           Clinical AI Co-Pilot
         </a>
         <ul class="navbar-links">
-          <li><a href="/static/frontend/upload.html" class="active">Upload</a></li>
+          <li><a href="/static/frontend/dashboard.html">Dashboard</a></li>
+          <li><a href="/static/frontend/cases.html">Cases</a></li>
+          <li><a href="/static/frontend/upload.html" class="active">Upload (Legacy)</a></li>
           <li><a href="/static/frontend/review.html">Review</a></li>
-          <li><a href="/static/frontend/report.html">Reports</a></li>
         </ul>
         <div class="user-badge">
           <span class="dot"></span>
@@ -187,6 +188,8 @@
   <script>
     // Auth guard
     if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
+    
+    // Note: This is the legacy all-in-one upload page. Consider using the new modular pages instead.
 
     let currentCaseId = null;
     let analysisCount = 0;

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Clinical AI Co-Pilot Dashboard — Overview and quick navigation.">
+  <title>Clinical AI Co-Pilot — Dashboard</title>
+  <link rel="stylesheet" href="/static/frontend/css/styles.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- ── Navbar ──────────────────────────────────────────────────── -->
+    <nav class="navbar">
+      <div class="container">
+        <a href="/static/frontend/dashboard.html" class="navbar-brand">
+          <div class="logo-icon">🏥</div>
+          Clinical AI Co-Pilot
+        </a>
+        <ul class="navbar-links">
+          <li><a href="/static/frontend/dashboard.html" class="active">Dashboard</a></li>
+          <li><a href="/static/frontend/cases.html">Cases</a></li>
+          <li><a href="/static/frontend/review.html">Review</a></li>
+          <li><a href="/static/frontend/report.html">Reports</a></li>
+        </ul>
+        <div class="user-badge">
+          <span class="dot"></span>
+          <span id="user-display">Clinician</span>
+          <a href="#" onclick="logout()" style="margin-left:8px;font-size:0.75rem;">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container section">
+      <!-- ── Header ──────────────────────────────────────────────── -->
+      <div class="section-header">
+        <h1>Clinical AI Co-Pilot Dashboard</h1>
+        <p>Multi-modal AI-powered clinical decision support system</p>
+      </div>
+
+      <!-- ── Quick Stats ─────────────────────────────────────────── -->
+      <div class="grid-4 mb-3">
+        <div class="stat-card">
+          <div class="stat-value" id="total-cases">0</div>
+          <div class="stat-label">Total Cases</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="pending-cases">0</div>
+          <div class="stat-label">Pending Review</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="completed-cases">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="reports-generated">0</div>
+          <div class="stat-label">Reports Generated</div>
+        </div>
+      </div>
+
+      <!-- ── Analysis Modules ────────────────────────────────────── -->
+      <div class="section-header mt-3">
+        <h2>Analysis Modules</h2>
+        <p>Select a modality to begin analysis</p>
+      </div>
+
+      <div class="grid-3">
+        <!-- X-Ray Module -->
+        <div class="card" style="cursor:pointer;transition:all 0.3s;" onclick="window.location.href='/static/frontend/xray.html'">
+          <div class="card-header">
+            <div class="card-icon blue">🫁</div>
+            <div>
+              <h3>Chest X-Ray Analysis</h3>
+              <span class="badge badge-blue">CNN · MobileNetV2</span>
+            </div>
+          </div>
+          <p class="text-muted" style="font-size:0.85rem;margin-bottom:12px;">
+            Upload chest X-ray images for pneumonia detection with Grad-CAM explainability.
+          </p>
+          <div class="d-flex align-center justify-between">
+            <span style="font-size:0.75rem;color:var(--text-muted);">Binary Classification</span>
+            <button class="btn btn-secondary btn-sm">Launch →</button>
+          </div>
+        </div>
+
+        <!-- Heart Risk Module -->
+        <div class="card" style="cursor:pointer;transition:all 0.3s;" onclick="window.location.href='/static/frontend/heart.html'">
+          <div class="card-header">
+            <div class="card-icon coral">❤️</div>
+            <div>
+              <h3>Heart Disease Risk</h3>
+              <span class="badge badge-coral">ANN · Clinical Features</span>
+            </div>
+          </div>
+          <p class="text-muted" style="font-size:0.85rem;margin-bottom:12px;">
+            Assess cardiovascular risk from clinical vitals and lab values with SHAP analysis.
+          </p>
+          <div class="d-flex align-center justify-between">
+            <span style="font-size:0.75rem;color:var(--text-muted);">13 Clinical Features</span>
+            <button class="btn btn-secondary btn-sm">Launch →</button>
+          </div>
+        </div>
+
+        <!-- Symptom Classifier Module -->
+        <div class="card" style="cursor:pointer;transition:all 0.3s;" onclick="window.location.href='/static/frontend/symptoms.html'">
+          <div class="card-header">
+            <div class="card-icon purple">💬</div>
+            <div>
+              <h3>Symptom Classifier</h3>
+              <span class="badge badge-purple">BiLSTM · NLP</span>
+            </div>
+          </div>
+          <p class="text-muted" style="font-size:0.85rem;margin-bottom:12px;">
+            Natural language symptom analysis for condition classification across 24 disease categories.
+          </p>
+          <div class="d-flex align-center justify-between">
+            <span style="font-size:0.75rem;color:var(--text-muted);">24 Conditions</span>
+            <button class="btn btn-secondary btn-sm">Launch →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Document & Workflow Tools ────────────────────────────── -->
+      <div class="section-header mt-3">
+        <h2>Document & Workflow Tools</h2>
+      </div>
+
+      <div class="grid-2">
+        <!-- Document Upload -->
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='/static/frontend/documents.html'">
+          <div class="card-header">
+            <div class="card-icon amber">📄</div>
+            <div>
+              <h3>Medical Document Upload</h3>
+              <span class="badge badge-amber">PDF Parser</span>
+            </div>
+          </div>
+          <p class="text-muted" style="font-size:0.85rem;margin-bottom:12px;">
+            Extract structured data from clinical notes, discharge summaries, and lab reports.
+          </p>
+          <button class="btn btn-secondary btn-sm">Upload Documents →</button>
+        </div>
+
+        <!-- Case Management -->
+        <div class="card" style="cursor:pointer;" onclick="window.location.href='/static/frontend/cases.html'">
+          <div class="card-header">
+            <div class="card-icon teal">📋</div>
+            <div>
+              <h3>Case Management</h3>
+              <span class="badge badge-teal">HITL Workflow</span>
+            </div>
+          </div>
+          <p class="text-muted" style="font-size:0.85rem;margin-bottom:12px;">
+            View all cases, track status, and manage patient records through the review workflow.
+          </p>
+          <button class="btn btn-secondary btn-sm">View Cases →</button>
+        </div>
+      </div>
+
+      <!-- ── Recent Activity ─────────────────────────────────────── -->
+      <div class="card mt-3">
+        <div class="card-header">
+          <div class="card-icon blue">📊</div>
+          <h3>Recent Activity</h3>
+        </div>
+        <div id="recent-activity">
+          <p class="text-muted text-center" style="padding:20px;">Loading recent cases...</p>
+        </div>
+      </div>
+
+      <!-- ── Quick Actions ────────────────────────────────────────── -->
+      <div class="card mt-3" style="background: linear-gradient(135deg, rgba(0, 212, 170, 0.05), rgba(78, 140, 255, 0.05));">
+        <div style="text-align:center;padding:20px;">
+          <h3 class="mb-2">Ready to Start a New Analysis?</h3>
+          <p class="text-muted mb-3">Create a new case and begin multi-modal clinical analysis</p>
+          <button class="btn btn-primary btn-lg" onclick="createNewCase()">
+            ➕ Create New Case
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/frontend/js/api.js"></script>
+  <script>
+    if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
+
+    getCurrentUser().then(user => {
+      document.getElementById('user-display').textContent = user.full_name;
+    }).catch(() => {});
+
+    // Load dashboard stats
+    (async function loadDashboard() {
+      try {
+        const cases = await listCases();
+        
+        document.getElementById('total-cases').textContent = cases.length;
+        document.getElementById('pending-cases').textContent = 
+          cases.filter(c => c.status === 'pending' || c.status === 'in_review').length;
+        document.getElementById('completed-cases').textContent = 
+          cases.filter(c => c.status === 'completed').length;
+        
+        // Count reports (cases with generated reports)
+        let reportCount = 0;
+        for (const c of cases) {
+          try {
+            const reportStatus = await getReportStatus(c.id);
+            if (reportStatus.ready) reportCount++;
+          } catch {}
+        }
+        document.getElementById('reports-generated').textContent = reportCount;
+
+        // Render recent activity
+        renderRecentActivity(cases.slice(0, 5));
+
+      } catch (err) {
+        console.error('Failed to load dashboard:', err);
+      }
+    })();
+
+    function renderRecentActivity(cases) {
+      const container = document.getElementById('recent-activity');
+      
+      if (!cases || cases.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center" style="padding:20px;">No recent cases</p>';
+        return;
+      }
+
+      const statusColors = {
+        pending: 'badge-amber',
+        in_review: 'badge-blue',
+        completed: 'badge-teal'
+      };
+
+      let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+      cases.forEach(c => {
+        const date = new Date(c.created_at).toLocaleString();
+        html += `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-subtle);">
+            <div>
+              <div style="font-weight:600;">Case #${c.id}</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">${date}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="badge ${statusColors[c.status] || 'badge-blue'}">${c.status}</span>
+              <a href="/static/frontend/review.html?case_id=${c.id}" class="btn btn-secondary btn-sm">View</a>
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+
+      container.innerHTML = html;
+    }
+
+    async function createNewCase() {
+      const name = prompt('Enter patient name (optional):', 'Anonymous');
+      if (name === null) return;
+
+      try {
+        showLoading('Creating new case...');
+        const result = await createCase(name, null, null);
+        hideLoading();
+        showToast(`Case #${result.id} created successfully`, 'success');
+        
+        // Offer to navigate to analysis module
+        if (confirm('Case created! Would you like to start with X-Ray analysis?')) {
+          window.location.href = `/static/frontend/xray.html?case_id=${result.id}`;
+        } else {
+          location.reload();
+        }
+      } catch (err) {
+        hideLoading();
+        showToast(err.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>
