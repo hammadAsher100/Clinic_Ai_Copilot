@@ -65,7 +65,7 @@ def create_discharge_summary() -> None:
     ]
 
     doc.build(elements)
-    print(f"  [✓] Created: {filepath.name}")
+    print(f"  [OK] Created: {filepath.name}")
 
 
 def create_lab_report() -> None:
@@ -123,7 +123,7 @@ def create_lab_report() -> None:
     ]
 
     doc.build(elements)
-    print(f"  [✓] Created: {filepath.name}")
+    print(f"  [OK] Created: {filepath.name}")
 
 
 def create_clinical_note() -> None:
@@ -173,7 +173,7 @@ def create_clinical_note() -> None:
     ]
 
     doc.build(elements)
-    print(f"  [✓] Created: {filepath.name}")
+    print(f"  [OK] Created: {filepath.name}")
 
 
 def main() -> None:
@@ -182,7 +182,7 @@ def main() -> None:
     create_discharge_summary()
     create_lab_report()
     create_clinical_note()
-    print(f"\n[✓] All samples generated in: {OUTPUT_DIR}")
+    print(f"\n[OK] All samples generated in: {OUTPUT_DIR}")
 
 
 if __name__ == "__main__":

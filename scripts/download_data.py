@@ -34,18 +34,18 @@ def download_uci_heart_disease() -> None:
     dest_file = dest_dir / "heart.csv"
 
     if dest_file.exists():
-        print(f"[✓] Heart disease data already exists: {dest_file}")
+        print(f"[OK] Heart disease data already exists: {dest_file}")
         return
 
     # UCI ML Repository direct download (Cleveland subset)
     url = "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
-    print(f"[↓] Downloading UCI Heart Disease from {url}...")
+    print(f"[DOWN] Downloading UCI Heart Disease from {url}...")
 
     try:
         urllib.request.urlretrieve(url, str(dest_file))
-        print(f"[✓] Saved to {dest_file}")
+        print(f"[OK] Saved to {dest_file}")
     except Exception as e:
-        print(f"[✗] Download failed: {e}")
+        print(f"[FAIL] Download failed: {e}")
         print("    Manual download: https://archive.ics.uci.edu/dataset/45/heart+disease")
         print(f"    Save as: {dest_file}")
 
@@ -56,10 +56,10 @@ def download_kaggle_dataset(dataset: str, dest_dir: Path) -> None:
 
     # Check if data already exists
     if any(dest_dir.iterdir()):
-        print(f"[✓] Data already exists in {dest_dir}")
+        print(f"[OK] Data already exists in {dest_dir}")
         return
 
-    print(f"[↓] Downloading Kaggle dataset: {dataset}...")
+    print(f"[DOWN] Downloading Kaggle dataset: {dataset}...")
 
     try:
         result = subprocess.run(
@@ -67,17 +67,17 @@ def download_kaggle_dataset(dataset: str, dest_dir: Path) -> None:
             capture_output=True, text=True, timeout=300,
         )
         if result.returncode == 0:
-            print(f"[✓] Downloaded to {dest_dir}")
+            print(f"[OK] Downloaded to {dest_dir}")
         else:
-            print(f"[✗] Kaggle download failed: {result.stderr}")
+            print(f"[FAIL] Kaggle download failed: {result.stderr}")
             print(f"    Manual download: https://www.kaggle.com/datasets/{dataset}")
             print(f"    Extract to: {dest_dir}")
     except FileNotFoundError:
-        print("[✗] 'kaggle' CLI not found. Install with: pip install kaggle")
+        print("[FAIL] 'kaggle' CLI not found. Install with: pip install kaggle")
         print(f"    Then run: kaggle datasets download -d {dataset} -p {dest_dir} --unzip")
         print(f"    Or manually download from: https://www.kaggle.com/datasets/{dataset}")
     except subprocess.TimeoutExpired:
-        print("[✗] Download timed out — try manually or check your internet connection")
+        print("[FAIL] Download timed out — try manually or check your internet connection")
 
 
 def download_xray_data() -> None:
@@ -94,7 +94,7 @@ def download_xray_data() -> None:
             if not target.exists():
                 shutil.move(str(item), str(target))
         shutil.rmtree(str(nested), ignore_errors=True)
-        print("[✓] Restructured X-ray directory layout")
+        print("[OK] Restructured X-ray directory layout")
 
 
 def download_symptom_data() -> None:
@@ -119,13 +119,13 @@ def verify_data() -> None:
     all_ok = True
     for name, path in checks:
         exists = path.exists()
-        status = "✓" if exists else "✗"
+        status = "OK" if exists else "FAIL"
         print(f"  [{status}] {name}: {path}")
         if not exists:
             all_ok = False
 
     if all_ok:
-        print("\n[✓] All datasets are ready!")
+        print("\n[OK] All datasets are ready!")
     else:
         print("\n[!] Some datasets are missing — see instructions above")
 
