@@ -30,7 +30,7 @@ from ml.text_model.preprocess import (
 )
 from ml.text_model.model import build_text_model
 
-MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", str(PROJECT_ROOT / "mlruns"))
 MLFLOW_EXPERIMENT = os.getenv("MLFLOW_EXPERIMENT_NAME", "clinical-copilot")
 REGISTRY_DIR = Path(os.getenv("MODEL_REGISTRY_PATH", "ml/registry"))
 RAW_DATA_PATH = os.getenv("TEXT_RAW_DATA", "data/raw/text/Symptom2Disease.csv")

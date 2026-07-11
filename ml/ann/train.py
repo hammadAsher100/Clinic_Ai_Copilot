@@ -30,7 +30,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from ml.ann.preprocess import load_raw_data, preprocess_and_split
 from ml.ann.model import build_ann
 
-MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", str(PROJECT_ROOT / "mlruns"))
 MLFLOW_EXPERIMENT = os.getenv("MLFLOW_EXPERIMENT_NAME", "clinical-copilot")
 REGISTRY_DIR = Path(os.getenv("MODEL_REGISTRY_PATH", "ml/registry"))
 RAW_DATA_PATH = os.getenv("ANN_RAW_DATA", "data/raw/tabular/heart.csv")
@@ -69,11 +69,8 @@ def train(
     model.summary()
 
     # ── MLflow logging ───────────────────────────────────────────────────
-    try:
-        mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-    except Exception:
-        mlflow.set_tracking_uri("mlruns")
-
+    os.environ["MLFLOW_TRACKING_URI"] = str(PROJECT_ROOT / "mlruns")
+    mlflow.set_tracking_uri(str(PROJECT_ROOT / "mlruns"))
     mlflow.set_experiment(MLFLOW_EXPERIMENT)
 
     with mlflow.start_run(run_name="ann_heart_disease") as run:
