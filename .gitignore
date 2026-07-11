@@ -1,0 +1,46 @@
+# Env & secrets
+.env
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Data (don't commit large/raw data)
+data/raw/*
+data/processed/*
+data/uploads/*
+data/reports/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/uploads/.gitkeep
+!data/reports/.gitkeep
+
+# Model artifacts
+ml/registry/*.h5
+ml/registry/*.pkl
+ml/registry/*.joblib
+ml/registry/*.pt
+!ml/registry/.gitkeep
+
+# MLflow
+mlruns/*
+!mlruns/.gitkeep
+mlflow.db
+
+# SQLite databases (dev)
+*.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

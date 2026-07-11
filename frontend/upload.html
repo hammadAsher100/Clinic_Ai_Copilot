@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Upload clinical data — chest X-ray, vitals, symptoms, and PDF documents for AI analysis.">
+  <title>Clinical AI Co-Pilot — Upload &amp; Analyze</title>
+  <link rel="stylesheet" href="/static/frontend/css/styles.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- ── Navbar ──────────────────────────────────────────────────── -->
+    <nav class="navbar">
+      <div class="container">
+        <a href="/static/frontend/upload.html" class="navbar-brand">
+          <div class="logo-icon">🏥</div>
+          Clinical AI Co-Pilot
+        </a>
+        <ul class="navbar-links">
+          <li><a href="/static/frontend/upload.html" class="active">Upload</a></li>
+          <li><a href="/static/frontend/review.html">Review</a></li>
+          <li><a href="/static/frontend/report.html">Reports</a></li>
+        </ul>
+        <div class="user-badge">
+          <span class="dot"></span>
+          <span id="user-display">Clinician</span>
+          <a href="#" onclick="logout()" style="margin-left:8px;font-size:0.75rem;">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container section">
+      <!-- ── Page Header ──────────────────────────────────────────── -->
+      <div class="section-header">
+        <h1>Upload &amp; Analyze</h1>
+        <p>Submit clinical data across multiple modalities for AI-powered analysis</p>
+      </div>
+
+      <!-- ── Case Info ────────────────────────────────────────────── -->
+      <div class="card mb-3" id="case-info-card">
+        <div class="card-header">
+          <div class="card-icon teal">📋</div>
+          <div>
+            <h3>Patient Case</h3>
+            <p class="text-muted" style="font-size:0.8rem;">Case ID: <strong id="case-id-display">Not created</strong></p>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="patient-name">Patient Name</label>
+            <input type="text" id="patient-name" class="form-control" placeholder="Anonymous" value="Anonymous">
+          </div>
+          <div class="form-group">
+            <label for="patient-age">Age</label>
+            <input type="number" id="patient-age" class="form-control" placeholder="45">
+          </div>
+          <div class="form-group">
+            <label for="patient-sex">Sex</label>
+            <select id="patient-sex" class="form-control">
+              <option value="">Select</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="create-case-btn" onclick="handleCreateCase()">Create Case</button>
+      </div>
+
+      <!-- ── Modality Upload Grid ─────────────────────────────────── -->
+      <div class="grid-2">
+
+        <!-- Image Upload -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon blue">🫁</div>
+            <div>
+              <h3>Chest X-Ray</h3>
+              <span class="badge badge-blue">CNN · MobileNetV2</span>
+            </div>
+          </div>
+          <div class="file-upload" id="xray-dropzone">
+            <input type="file" id="xray-file" accept="image/jpeg,image/png" onchange="handleFileSelect(this, 'xray')">
+            <div class="file-upload-icon">📷</div>
+            <div class="file-upload-text">Drop chest X-ray here or click to browse</div>
+            <div class="file-upload-hint">JPG or PNG, max 10 MB</div>
+          </div>
+          <div id="xray-preview" class="mt-1 hidden">
+            <img id="xray-preview-img" style="max-width:100%;border-radius:8px;max-height:200px;" alt="X-ray preview">
+          </div>
+          <button class="btn btn-primary btn-block mt-2" id="analyze-xray-btn" onclick="handleAnalyzeImage()" disabled>
+            <span class="spinner"></span>
+            <span class="btn-text">Analyze X-Ray</span>
+          </button>
+          <div id="xray-result" class="result-card mt-2 hidden"></div>
+        </div>
+
+        <!-- Tabular Input -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon coral">❤️</div>
+            <div>
+              <h3>Heart Disease Risk</h3>
+              <span class="badge badge-coral">ANN · Clinical Features</span>
+            </div>
+          </div>
+          <div class="grid-2" style="gap:10px;">
+            <div class="form-group"><label>Age</label><input type="number" id="tab-age" class="form-control" placeholder="45" value="55"></div>
+            <div class="form-group"><label>Sex (0=F, 1=M)</label><input type="number" id="tab-sex" class="form-control" min="0" max="1" value="1"></div>
+            <div class="form-group"><label>Chest Pain (0-3)</label><input type="number" id="tab-cp" class="form-control" min="0" max="3" value="2"></div>
+            <div class="form-group"><label>Rest BP (mmHg)</label><input type="number" id="tab-trestbps" class="form-control" value="130"></div>
+            <div class="form-group"><label>Cholesterol</label><input type="number" id="tab-chol" class="form-control" value="250"></div>
+            <div class="form-group"><label>Fasting BS &gt;120</label><input type="number" id="tab-fbs" class="form-control" min="0" max="1" value="0"></div>
+            <div class="form-group"><label>Rest ECG (0-2)</label><input type="number" id="tab-restecg" class="form-control" min="0" max="2" value="0"></div>
+            <div class="form-group"><label>Max HR</label><input type="number" id="tab-thalach" class="form-control" value="150"></div>
+            <div class="form-group"><label>Exercise Angina</label><input type="number" id="tab-exang" class="form-control" min="0" max="1" value="0"></div>
+            <div class="form-group"><label>ST Depression</label><input type="number" id="tab-oldpeak" class="form-control" step="0.1" value="1.5"></div>
+            <div class="form-group"><label>Slope (0-2)</label><input type="number" id="tab-slope" class="form-control" min="0" max="2" value="1"></div>
+            <div class="form-group"><label>Major Vessels (0-3)</label><input type="number" id="tab-ca" class="form-control" min="0" max="3" value="0"></div>
+          </div>
+          <div class="form-group"><label>Thal (1-3)</label><input type="number" id="tab-thal" class="form-control" min="1" max="3" value="2"></div>
+          <button class="btn btn-primary btn-block mt-2" id="analyze-tabular-btn" onclick="handleAnalyzeTabular()">
+            <span class="spinner"></span>
+            <span class="btn-text">Assess Heart Risk</span>
+          </button>
+          <div id="tabular-result" class="result-card mt-2 hidden"></div>
+        </div>
+
+        <!-- Text Input -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon purple">💬</div>
+            <div>
+              <h3>Symptom Description</h3>
+              <span class="badge badge-purple">BiLSTM · 24 Conditions</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="symptoms-text">Describe symptoms in natural language</label>
+            <textarea id="symptoms-text" class="form-control" rows="5" placeholder="e.g., I have been experiencing severe headaches, blurred vision, and dizziness for the past two weeks..."></textarea>
+          </div>
+          <button class="btn btn-primary btn-block" id="analyze-text-btn" onclick="handleAnalyzeText()">
+            <span class="spinner"></span>
+            <span class="btn-text">Classify Symptoms</span>
+          </button>
+          <div id="text-result" class="result-card mt-2 hidden"></div>
+        </div>
+
+        <!-- PDF Upload -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon amber">📄</div>
+            <div>
+              <h3>Medical Document</h3>
+              <span class="badge badge-amber">PDF Parser</span>
+            </div>
+          </div>
+          <div class="file-upload" id="pdf-dropzone">
+            <input type="file" id="pdf-file" accept="application/pdf" onchange="handleFileSelect(this, 'pdf')">
+            <div class="file-upload-icon">📁</div>
+            <div class="file-upload-text">Drop PDF document here or click to browse</div>
+            <div class="file-upload-hint">Discharge notes, lab reports, clinical notes</div>
+          </div>
+          <div id="pdf-filename" class="mt-1 text-muted" style="font-size:0.8rem;"></div>
+          <button class="btn btn-secondary btn-block mt-2" id="upload-pdf-btn" disabled>
+            <span class="btn-text">Extract &amp; Attach</span>
+          </button>
+          <div id="pdf-result" class="mt-2 hidden" style="font-size:0.85rem;color:var(--text-secondary);"></div>
+        </div>
+      </div>
+
+      <!-- ── Actions ──────────────────────────────────────────────── -->
+      <div class="card mt-3" style="text-align:center;">
+        <h3 class="mb-2">Ready for Review?</h3>
+        <p class="text-muted mb-2">Once all analyses are complete, proceed to the HITL review dashboard.</p>
+        <div class="d-flex gap-2" style="justify-content:center;">
+          <button class="btn btn-primary btn-lg" id="go-review-btn" onclick="goToReview()" disabled>
+            Proceed to Review →
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/frontend/js/api.js"></script>
+  <script src="/static/frontend/js/charts.js"></script>
+  <script>
+    // Auth guard
+    if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
+
+    let currentCaseId = null;
+    let analysisCount = 0;
+
+    // Load user info
+    getCurrentUser().then(user => {
+      document.getElementById('user-display').textContent = user.full_name;
+    }).catch(() => {});
+
+    async function handleCreateCase() {
+      try {
+        const result = await createCase(
+          document.getElementById('patient-name').value,
+          document.getElementById('patient-age').value,
+          document.getElementById('patient-sex').value
+        );
+        currentCaseId = result.id;
+        document.getElementById('case-id-display').textContent = `#${result.id}`;
+        document.getElementById('create-case-btn').textContent = '✓ Case Created';
+        document.getElementById('create-case-btn').disabled = true;
+        showToast(`Case #${result.id} created`, 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function handleFileSelect(input, type) {
+      const file = input.files[0];
+      if (!file) return;
+      if (type === 'xray') {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('xray-preview-img').src = e.target.result;
+          document.getElementById('xray-preview').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+        document.getElementById('analyze-xray-btn').disabled = false;
+      } else if (type === 'pdf') {
+        document.getElementById('pdf-filename').textContent = `Selected: ${file.name}`;
+        document.getElementById('upload-pdf-btn').disabled = false;
+      }
+    }
+
+    async function handleAnalyzeImage() {
+      const file = document.getElementById('xray-file').files[0];
+      if (!file) return showToast('Please select an X-ray image', 'error');
+
+      const btn = document.getElementById('analyze-xray-btn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const result = await predictImage(file, currentCaseId, document.getElementById('patient-name').value);
+        if (!currentCaseId) currentCaseId = result.case_id;
+        document.getElementById('case-id-display').textContent = `#${currentCaseId}`;
+
+        const resDiv = document.getElementById('xray-result');
+        const isPositive = result.prediction === 'PNEUMONIA';
+        resDiv.innerHTML = `
+          <div class="modality-tag">Chest X-Ray Analysis</div>
+          <div class="prediction-value ${isPositive ? 'positive' : 'negative'}">${result.prediction}</div>
+          <div class="confidence-label"><span>Confidence</span><span>${(result.confidence * 100).toFixed(1)}%</span></div>
+          <div class="progress-bar"><div class="fill" style="width:${result.confidence * 100}%;${isPositive ? 'background:var(--accent-coral);' : ''}"></div></div>
+          ${result.gradcam_url ? `<img src="${result.gradcam_url}" class="explainability-img" alt="Grad-CAM heatmap">` : ''}
+        `;
+        resDiv.classList.remove('hidden');
+        analysisCount++;
+        checkReviewReady();
+        showToast('X-Ray analysis complete', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
+    async function handleAnalyzeTabular() {
+      const btn = document.getElementById('analyze-tabular-btn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const features = {
+          case_id: currentCaseId,
+          age: parseFloat(document.getElementById('tab-age').value),
+          sex: parseFloat(document.getElementById('tab-sex').value),
+          cp: parseFloat(document.getElementById('tab-cp').value),
+          trestbps: parseFloat(document.getElementById('tab-trestbps').value),
+          chol: parseFloat(document.getElementById('tab-chol').value),
+          fbs: parseFloat(document.getElementById('tab-fbs').value),
+          restecg: parseFloat(document.getElementById('tab-restecg').value),
+          thalach: parseFloat(document.getElementById('tab-thalach').value),
+          exang: parseFloat(document.getElementById('tab-exang').value),
+          oldpeak: parseFloat(document.getElementById('tab-oldpeak').value),
+          slope: parseFloat(document.getElementById('tab-slope').value),
+          ca: parseFloat(document.getElementById('tab-ca').value),
+          thal: parseFloat(document.getElementById('tab-thal').value),
+        };
+
+        const result = await predictTabular(features);
+        if (!currentCaseId) currentCaseId = result.case_id;
+        document.getElementById('case-id-display').textContent = `#${currentCaseId}`;
+
+        const resDiv = document.getElementById('tabular-result');
+        const isHighRisk = result.prediction === 'HIGH_RISK';
+        resDiv.innerHTML = `
+          <div class="modality-tag">Heart Disease Risk Assessment</div>
+          <div class="prediction-value ${isHighRisk ? 'positive' : 'negative'}">${result.prediction.replace('_', ' ')}</div>
+          <div class="confidence-label"><span>Confidence</span><span>${(result.confidence * 100).toFixed(1)}%</span></div>
+          <div class="progress-bar"><div class="fill" style="width:${result.confidence * 100}%;${isHighRisk ? 'background:var(--accent-coral);' : ''}"></div></div>
+          ${result.shap_chart_url ? `<img src="${result.shap_chart_url}" class="explainability-img" style="max-width:100%;" alt="SHAP chart">` : ''}
+          <div id="tabular-shap-chart" class="mt-1"></div>
+        `;
+        resDiv.classList.remove('hidden');
+        if (result.shap_values) {
+          renderSHAPChart('tabular-shap-chart', result.shap_values);
+        }
+        analysisCount++;
+        checkReviewReady();
+        showToast('Heart risk assessment complete', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
+    async function handleAnalyzeText() {
+      const text = document.getElementById('symptoms-text').value.trim();
+      if (!text || text.length < 5) return showToast('Please enter a symptom description', 'error');
+
+      const btn = document.getElementById('analyze-text-btn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const result = await predictText(text, currentCaseId);
+        if (!currentCaseId) currentCaseId = result.case_id;
+        document.getElementById('case-id-display').textContent = `#${currentCaseId}`;
+
+        const resDiv = document.getElementById('text-result');
+        resDiv.innerHTML = `
+          <div class="modality-tag">Symptom Classification</div>
+          <div class="prediction-value" style="color:var(--accent-purple);">${result.condition}</div>
+          <div class="confidence-label"><span>Confidence</span><span>${(result.confidence * 100).toFixed(1)}%</span></div>
+          <div class="progress-bar"><div class="fill" style="width:${result.confidence * 100}%;background:var(--accent-purple);"></div></div>
+          <div id="text-top3" class="mt-2"></div>
+        `;
+        resDiv.classList.remove('hidden');
+        if (result.top_3) {
+          renderTop3Conditions('text-top3', result.top_3);
+        }
+        analysisCount++;
+        checkReviewReady();
+        showToast('Symptom classification complete', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
+    function checkReviewReady() {
+      document.getElementById('go-review-btn').disabled = analysisCount < 1 || !currentCaseId;
+    }
+
+    function goToReview() {
+      if (currentCaseId) {
+        window.location.href = `/static/frontend/review.html?case_id=${currentCaseId}`;
+      }
+    }
+
+    // Drag-and-drop enhancement
+    document.querySelectorAll('.file-upload').forEach(zone => {
+      zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+      zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+      zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); });
+    });
+  </script>
+</body>
+</html>

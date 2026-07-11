@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Clinical AI Co-Pilot — Secure clinician login for the multimodal clinical decision-support system.">
+  <title>Clinical AI Co-Pilot — Login</title>
+  <link rel="stylesheet" href="/static/frontend/css/styles.css">
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="card login-card">
+      <div class="logo-large">🏥</div>
+      <h1>Clinical AI Co-Pilot</h1>
+      <p class="subtitle">Multi-modal clinical decision support system</p>
+
+      <div id="login-error" class="alert alert-error hidden"></div>
+
+      <form id="login-form" autocomplete="on">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" class="form-control" placeholder="Enter username" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block mt-2" id="login-btn">
+          <span class="spinner"></span>
+          <span class="btn-text">Sign In</span>
+        </button>
+      </form>
+
+      <p class="mt-3 text-muted" style="font-size: 0.75rem;">
+        Demo credentials: <strong>clinician</strong> / <strong>demo2026</strong>
+      </p>
+
+      <div class="mt-3" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <span class="badge badge-teal">CNN X-Ray</span>
+        <span class="badge badge-blue">ANN Heart</span>
+        <span class="badge badge-purple">BiLSTM Symptoms</span>
+        <span class="badge badge-amber">LLM Co-Pilot</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/frontend/js/api.js"></script>
+  <script>
+    // Redirect if already authenticated
+    if (isAuthenticated()) {
+      window.location.href = '/static/frontend/upload.html';
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      const errorEl = document.getElementById('login-error');
+
+      btn.classList.add('loading');
+      btn.disabled = true;
+      errorEl.classList.add('hidden');
+
+      try {
+        await login(
+          document.getElementById('username').value,
+          document.getElementById('password').value
+        );
+        window.location.href = '/static/frontend/upload.html';
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.remove('hidden');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

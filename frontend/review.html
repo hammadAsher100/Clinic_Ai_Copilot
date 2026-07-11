@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HITL Review Dashboard — Review, approve, reject, or edit AI model predictions.">
+  <title>Clinical AI Co-Pilot — Review Dashboard</title>
+  <link rel="stylesheet" href="/static/frontend/css/styles.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- ── Navbar ──────────────────────────────────────────────────── -->
+    <nav class="navbar">
+      <div class="container">
+        <a href="/static/frontend/upload.html" class="navbar-brand">
+          <div class="logo-icon">🏥</div>
+          Clinical AI Co-Pilot
+        </a>
+        <ul class="navbar-links">
+          <li><a href="/static/frontend/upload.html">Upload</a></li>
+          <li><a href="/static/frontend/review.html" class="active">Review</a></li>
+          <li><a href="/static/frontend/report.html">Reports</a></li>
+        </ul>
+        <div class="user-badge">
+          <span class="dot"></span>
+          <span id="user-display">Clinician</span>
+          <a href="#" onclick="logout()" style="margin-left:8px;font-size:0.75rem;">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container section">
+      <!-- ── Case Selector ────────────────────────────────────────── -->
+      <div class="d-flex align-center justify-between mb-3" style="flex-wrap:wrap;gap:12px;">
+        <div>
+          <h1>HITL Review Dashboard</h1>
+          <p>Review AI predictions and provide clinical decisions</p>
+        </div>
+        <div class="d-flex gap-1 align-center">
+          <label for="case-select" style="font-size:0.85rem;color:var(--text-secondary);">Case:</label>
+          <select id="case-select" class="form-control" style="width:160px;" onchange="loadCase()">
+            <option value="">Select case...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── Prediction Cards Grid ────────────────────────────────── -->
+      <div class="grid-3" id="predictions-grid">
+        <div class="card" style="min-height:300px;display:flex;align-items:center;justify-content:center;" id="placeholder-msg">
+          <p class="text-muted text-center">Select a case to review predictions</p>
+        </div>
+      </div>
+
+      <!-- ── LLM Narrative ────────────────────────────────────────── -->
+      <div class="card mt-3 hidden" id="narrative-section">
+        <div class="card-header">
+          <div class="card-icon amber">🤖</div>
+          <div>
+            <h3>AI-Generated Clinical Narrative</h3>
+            <span class="badge badge-amber">LLM · Reasoning/Summarization Only</span>
+          </div>
+        </div>
+        <div id="narrative-content" class="narrative-block editable" contenteditable="true">
+        </div>
+        <div class="d-flex gap-1 mt-2">
+          <button class="btn btn-secondary btn-sm" onclick="handleGenerateNarrative()">
+            <span class="spinner"></span>
+            <span class="btn-text">🔄 Regenerate Narrative</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Actions ──────────────────────────────────────────────── -->
+      <div class="card mt-3 hidden" id="actions-section" style="text-align:center;">
+        <h3 class="mb-2">Generate Report</h3>
+        <p class="text-muted mb-2">All decisions recorded. Generate the final consolidated PDF report.</p>
+        <button class="btn btn-primary btn-lg" id="generate-report-btn" onclick="handleGenerateReport()">
+          <span class="spinner"></span>
+          <span class="btn-text">📄 Generate Report</span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/frontend/js/api.js"></script>
+  <script src="/static/frontend/js/charts.js"></script>
+  <script>
+    if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
+
+    let currentCaseId = null;
+    let caseData = null;
+
+    getCurrentUser().then(user => {
+      document.getElementById('user-display').textContent = user.full_name;
+    }).catch(() => {});
+
+    // Load case from URL param or fetch list
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlCaseId = urlParams.get('case_id');
+
+    (async function init() {
+      try {
+        const cases = await listCases();
+        const select = document.getElementById('case-select');
+        cases.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = `#${c.id} — ${c.status}`;
+          select.appendChild(opt);
+        });
+        if (urlCaseId) {
+          select.value = urlCaseId;
+          loadCase();
+        }
+      } catch (err) {
+        showToast('Failed to load cases', 'error');
+      }
+    })();
+
+    async function loadCase() {
+      const caseId = document.getElementById('case-select').value;
+      if (!caseId) return;
+      currentCaseId = parseInt(caseId);
+
+      try {
+        showLoading('Loading case data...');
+        caseData = await getCaseReview(currentCaseId);
+        renderPredictions(caseData);
+        renderNarrative(caseData);
+        hideLoading();
+      } catch (err) {
+        hideLoading();
+        showToast(err.message, 'error');
+      }
+    }
+
+    function renderPredictions(data) {
+      const grid = document.getElementById('predictions-grid');
+      if (!data.predictions || data.predictions.length === 0) {
+        grid.innerHTML = '<div class="card" style="grid-column:1/-1;text-align:center;padding:40px;"><p class="text-muted">No predictions found for this case</p></div>';
+        return;
+      }
+
+      const modalities = { image: null, tabular: null, text: null };
+      data.predictions.forEach(p => { modalities[p.modality] = p; });
+      const existingDecisions = {};
+      (data.decisions || []).forEach(d => { existingDecisions[d.modality] = d; });
+
+      let html = '';
+
+      // Image card
+      if (modalities.image) {
+        const p = modalities.image;
+        const dec = existingDecisions.image;
+        const isPositive = p.prediction === 'PNEUMONIA';
+        html += `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon blue">🫁</div>
+              <div><h4>Chest X-Ray</h4><span class="badge badge-blue">CNN</span></div>
+            </div>
+            <div class="prediction-value ${isPositive ? 'positive' : 'negative'}">${p.prediction}</div>
+            <div id="gauge-image"></div>
+            ${p.explainability_ref ? `<img src="${p.explainability_ref}" class="explainability-img" alt="Grad-CAM">` : ''}
+            ${renderDecisionUI('image', p.prediction, dec)}
+          </div>`;
+      }
+
+      // Tabular card
+      if (modalities.tabular) {
+        const p = modalities.tabular;
+        const dec = existingDecisions.tabular;
+        const isHighRisk = p.prediction === 'HIGH_RISK';
+        html += `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon coral">❤️</div>
+              <div><h4>Heart Disease Risk</h4><span class="badge badge-coral">ANN</span></div>
+            </div>
+            <div class="prediction-value ${isHighRisk ? 'positive' : 'negative'}">${p.prediction.replace('_', ' ')}</div>
+            <div id="gauge-tabular"></div>
+            ${p.explainability_ref ? `<img src="${p.explainability_ref}" class="explainability-img" style="max-width:100%;" alt="SHAP">` : ''}
+            <div id="review-shap-chart" class="mt-1"></div>
+            ${renderDecisionUI('tabular', p.prediction, dec)}
+          </div>`;
+      }
+
+      // Text card
+      if (modalities.text) {
+        const p = modalities.text;
+        const dec = existingDecisions.text;
+        html += `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon purple">💬</div>
+              <div><h4>Symptom Classification</h4><span class="badge badge-purple">BiLSTM</span></div>
+            </div>
+            <div class="prediction-value" style="color:var(--accent-purple);">${p.prediction}</div>
+            <div id="gauge-text"></div>
+            <div id="review-top3" class="mt-2"></div>
+            ${renderDecisionUI('text', p.prediction, dec)}
+          </div>`;
+      }
+
+      grid.innerHTML = html;
+
+      // Render charts after DOM update
+      requestAnimationFrame(() => {
+        if (modalities.image) renderConfidenceGauge('gauge-image', modalities.image.confidence, 'Confidence');
+        if (modalities.tabular) {
+          renderConfidenceGauge('gauge-tabular', modalities.tabular.confidence, 'Confidence');
+          if (modalities.tabular.raw_output && modalities.tabular.raw_output.shap_values) {
+            renderSHAPChart('review-shap-chart', modalities.tabular.raw_output.shap_values);
+          }
+        }
+        if (modalities.text) {
+          renderConfidenceGauge('gauge-text', modalities.text.confidence, 'Confidence');
+          if (modalities.text.raw_output && modalities.text.raw_output.top_3) {
+            renderTop3Conditions('review-top3', modalities.text.raw_output.top_3);
+          }
+        }
+      });
+    }
+
+    function renderDecisionUI(modality, prediction, existingDec) {
+      if (existingDec) {
+        const colors = { approve: 'badge-teal', reject: 'badge-coral', edit: 'badge-amber' };
+        return `
+          <div class="mt-2">
+            <span class="badge ${colors[existingDec.clinician_action] || 'badge-blue'}">
+              ${existingDec.clinician_action.toUpperCase()}
+            </span>
+            ${existingDec.edited_value ? `<span class="text-muted" style="font-size:0.8rem;margin-left:8px;">→ ${existingDec.edited_value}</span>` : ''}
+          </div>`;
+      }
+
+      return `
+        <div class="hitl-actions" id="hitl-${modality}">
+          <button class="btn btn-success btn-sm" onclick="handleDecision('${modality}', 'approve')">✓ Approve</button>
+          <button class="btn btn-danger btn-sm" onclick="handleDecision('${modality}', 'reject')">✗ Reject</button>
+          <button class="btn btn-warning btn-sm" onclick="showEditDialog('${modality}', '${prediction}')">✎ Edit</button>
+        </div>`;
+    }
+
+    async function handleDecision(modality, action, editedValue) {
+      try {
+        await submitDecision(currentCaseId, modality, action, editedValue);
+        showToast(`Decision recorded: ${modality} — ${action}`, 'success');
+        loadCase();  // Reload to reflect decision
+        document.getElementById('actions-section').classList.remove('hidden');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function showEditDialog(modality, currentValue) {
+      const newValue = prompt(`Edit ${modality} prediction (current: ${currentValue}):`, currentValue);
+      if (newValue && newValue !== currentValue) {
+        handleDecision(modality, 'edit', newValue);
+      }
+    }
+
+    function renderNarrative(data) {
+      const section = document.getElementById('narrative-section');
+      const content = document.getElementById('narrative-content');
+
+      if (data.llm_narrative) {
+        content.textContent = data.llm_narrative;
+        section.classList.remove('hidden');
+      } else if (data.predictions && data.predictions.length > 0) {
+        section.classList.remove('hidden');
+        content.textContent = 'Click "Regenerate Narrative" to generate an AI clinical summary.';
+      }
+      document.getElementById('actions-section').classList.remove('hidden');
+    }
+
+    async function handleGenerateNarrative() {
+      if (!currentCaseId) return;
+      try {
+        showLoading('Generating clinical narrative...');
+        const result = await summarizeCase(currentCaseId);
+        document.getElementById('narrative-content').textContent = result.narrative;
+        hideLoading();
+        showToast('Narrative generated', 'success');
+      } catch (err) {
+        hideLoading();
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function handleGenerateReport() {
+      if (!currentCaseId) return;
+      const btn = document.getElementById('generate-report-btn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        await generateReport(currentCaseId);
+        showToast('Report generated successfully!', 'success');
+        window.location.href = `/static/frontend/report.html?case_id=${currentCaseId}`;
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
