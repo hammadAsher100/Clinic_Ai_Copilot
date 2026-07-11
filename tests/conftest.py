@@ -3,7 +3,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from api.main import app
-from api.db.session import get_db, Base
+from api.db.session import get_db, engine
+from api.db.models import Base
 from api.core.config import settings
 
 # Test DB URL

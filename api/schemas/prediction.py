@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Any, Optional
 
 
 # ── Image (CNN — Pneumonia) ──────────────────────────────────────────────
@@ -49,6 +49,12 @@ class TabularPredictionResponse(BaseModel):
 
 # ── Text (BiLSTM — Symptom Classification) ───────────────────────────────
 
+class Top3Item(BaseModel):
+    """A single entry in the top-3 predictions list."""
+    condition: str
+    confidence: float = Field(ge=0, le=1)
+
+
 class TextPredictionRequest(BaseModel):
     """Input for symptom-to-condition classification."""
     case_id: Optional[int] = None
@@ -60,6 +66,6 @@ class TextPredictionResponse(BaseModel):
     case_id: int
     condition: str
     confidence: float = Field(ge=0, le=1)
-    top_3: Optional[list[dict[str, float]]] = Field(
+    top_3: Optional[list[Top3Item]] = Field(
         None, description="Top 3 predicted conditions with confidence scores"
     )

@@ -104,3 +104,4 @@ async def predict_image(
     except Exception as e:
         logger.error("Image prediction failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal error: {e}")
+1

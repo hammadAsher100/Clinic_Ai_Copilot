@@ -39,9 +39,9 @@ RAW_DATA_DIR = os.getenv("CNN_RAW_DATA", "data/raw/xray")
 
 
 def train(
-    epochs: int = 10,
+    epochs: int = 25,
     learning_rate: float = 1e-4,
-    patience: int = 5,
+    patience: int = 7,
 ) -> dict:
     """Train the CNN, log to MLflow, save best model.
 
@@ -65,11 +65,9 @@ def train(
     model.summary()
 
     # ── MLflow ───────────────────────────────────────────────────────────
-    try:
-        mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-    except Exception:
-        mlflow.set_tracking_uri("mlruns")
-
+    _mlruns = (PROJECT_ROOT / "mlruns").as_uri()
+    os.environ["MLFLOW_TRACKING_URI"] = _mlruns
+    mlflow.set_tracking_uri(_mlruns)
     mlflow.set_experiment(MLFLOW_EXPERIMENT)
 
     with mlflow.start_run(run_name="cnn_pneumonia"):

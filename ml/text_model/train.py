@@ -67,11 +67,9 @@ def train(
     model.summary()
 
     # ── MLflow ───────────────────────────────────────────────────────────
-    try:
-        mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-    except Exception:
-        mlflow.set_tracking_uri("mlruns")
-
+    _mlruns = (PROJECT_ROOT / "mlruns").as_uri()
+    os.environ["MLFLOW_TRACKING_URI"] = _mlruns
+    mlflow.set_tracking_uri(_mlruns)
     mlflow.set_experiment(MLFLOW_EXPERIMENT)
 
     with mlflow.start_run(run_name="bilstm_symptom_classifier"):

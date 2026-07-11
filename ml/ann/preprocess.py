@@ -104,7 +104,7 @@ def preprocess_and_split(
 
     # Train/test split
     X_train, X_test, y_train, y_test = train_test_split(
-        X.values, y, test_size=test_size, random_state=random_state, stratify=y
+        X.values.astype(np.float32), y.astype(np.float32), test_size=test_size, random_state=random_state, stratify=y
     )
 
     # Scale numeric columns (by index — they are the first len(NUMERIC_COLS) cols)

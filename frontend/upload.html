@@ -161,7 +161,8 @@
             <div class="file-upload-hint">Discharge notes, lab reports, clinical notes</div>
           </div>
           <div id="pdf-filename" class="mt-1 text-muted" style="font-size:0.8rem;"></div>
-          <button class="btn btn-secondary btn-block mt-2" id="upload-pdf-btn" disabled>
+          <button class="btn btn-secondary btn-block mt-2" id="upload-pdf-btn" onclick="handleUploadPDF()" disabled>
+            <span class="spinner"></span>
             <span class="btn-text">Extract &amp; Attach</span>
           </button>
           <div id="pdf-result" class="mt-2 hidden" style="font-size:0.85rem;color:var(--text-secondary);"></div>
@@ -358,6 +359,51 @@
     function goToReview() {
       if (currentCaseId) {
         window.location.href = `/static/frontend/review.html?case_id=${currentCaseId}`;
+      }
+    }
+
+    async function handleUploadPDF() {
+      const file = document.getElementById('pdf-file').files[0];
+      if (!file) return showToast('Please select a PDF document', 'error');
+
+      const btn = document.getElementById('upload-pdf-btn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const result = await uploadPDF(file, currentCaseId, document.getElementById('patient-name').value);
+        if (!currentCaseId) currentCaseId = result.case_id;
+        document.getElementById('case-id-display').textContent = `#${currentCaseId}`;
+
+        const resDiv = document.getElementById('pdf-result');
+        const fields = result.extracted_fields || {};
+        const fieldRows = Object.entries(fields).map(([k, v]) =>
+          `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+            <span style="color:var(--text-secondary);">${k.replace(/_/g, ' ')}</span>
+            <span style="font-weight:600;">${v}</span>
+          </div>`
+        ).join('');
+
+        resDiv.innerHTML = `
+          <div class="modality-tag">Document Extraction</div>
+          <div style="margin-bottom:8px;">
+            <span style="color:var(--accent-teal);font-weight:600;">✓ ${result.num_pages} page(s) extracted</span>
+          </div>
+          ${fieldRows ? `<div style="margin-bottom:8px;"><strong>Extracted Fields:</strong>${fieldRows}</div>` : ''}
+          <details style="margin-top:8px;">
+            <summary style="cursor:pointer;color:var(--accent-amber);">View Raw Text</summary>
+            <pre style="white-space:pre-wrap;font-size:0.75rem;max-height:200px;overflow-y:auto;margin-top:4px;padding:8px;background:rgba(0,0,0,0.2);border-radius:6px;">${result.raw_text || 'No text extracted'}</pre>
+          </details>
+        `;
+        resDiv.classList.remove('hidden');
+        analysisCount++;
+        checkReviewReady();
+        showToast('Document extracted and attached', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
       }
     }
 

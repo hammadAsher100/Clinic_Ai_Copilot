@@ -57,10 +57,10 @@ def train(
 
     print(f"[ANN] Training data: {X_train.shape}, Test data: {X_test.shape}")
     print(f"[ANN] Feature count: {input_dim}, Features: {feature_names[:5]}...")
-    print(f"[ANN] Target distribution — train: {np.bincount(y_train)}, test: {np.bincount(y_test)}")
+    print(f"[ANN] Target distribution — train: {np.bincount(y_train.astype(int))}, test: {np.bincount(y_test.astype(int))}")
 
     # ── Class weights ────────────────────────────────────────────────────
-    n_neg, n_pos = np.bincount(y_train)
+    n_neg, n_pos = np.bincount(y_train.astype(int))
     class_weight = {0: len(y_train) / (2 * n_neg), 1: len(y_train) / (2 * n_pos)}
     print(f"[ANN] Class weights: {class_weight}")
 
@@ -69,8 +69,9 @@ def train(
     model.summary()
 
     # ── MLflow logging ───────────────────────────────────────────────────
-    os.environ["MLFLOW_TRACKING_URI"] = str(PROJECT_ROOT / "mlruns")
-    mlflow.set_tracking_uri(str(PROJECT_ROOT / "mlruns"))
+    _mlruns = (PROJECT_ROOT / "mlruns").as_uri()
+    os.environ["MLFLOW_TRACKING_URI"] = _mlruns
+    mlflow.set_tracking_uri(_mlruns)
     mlflow.set_experiment(MLFLOW_EXPERIMENT)
 
     with mlflow.start_run(run_name="ann_heart_disease") as run:

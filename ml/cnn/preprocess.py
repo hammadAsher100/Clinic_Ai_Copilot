@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Tuple
 
 import numpy as np
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
 
 IMAGE_SIZE: Tuple[int, int] = (224, 224)
 BATCH_SIZE: int = 32

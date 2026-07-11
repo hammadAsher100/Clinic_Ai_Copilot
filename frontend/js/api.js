@@ -134,6 +134,24 @@ async function predictText(symptoms, caseId) {
   return res.json();
 }
 
+async function uploadPDF(file, caseId, patientName) {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (caseId) formData.append('case_id', caseId);
+  if (patientName) formData.append('patient_name', patientName);
+
+  const res = await fetch(`${API_BASE}/api/v1/documents/extract`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${getToken()}` },
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'PDF extraction failed');
+  }
+  return res.json();
+}
+
 // ── LLM Co-Pilot ─────────────────────────────────────────────────────
 
 async function summarizeCase(caseId) {
