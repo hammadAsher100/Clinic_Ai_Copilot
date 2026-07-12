@@ -72,3 +72,6 @@ logs/
 .cache/
 .tmp/
 temp/
+
+# Windows TensorFlow wheel (platform-specific, don't deploy to Linux)
+*.whl
