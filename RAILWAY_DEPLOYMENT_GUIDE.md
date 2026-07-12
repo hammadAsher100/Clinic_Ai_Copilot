@@ -48,7 +48,9 @@ In the Railway dashboard, go to **Variables** tab and add:
 
 ```bash
 # Database (Railway provides PostgreSQL)
-DATABASE_URL=${{Postgres.DATABASE_URL}}
+# IMPORTANT: Replace 'copilot-db' with YOUR actual database service name
+# Check Railway dashboard -> Your database service -> Settings -> Service Name
+DATABASE_URL=${{copilot-db.DATABASE_URL}}
 
 # JWT Authentication
 SECRET_KEY=your-super-secret-key-change-this-in-production-min-32-chars
@@ -95,10 +97,16 @@ GROQ_MODEL=llama-3.1-70b-versatile
    - Create `DATABASE_URL` variable
    - Link it to your service
 
-5. Update your app's `DATABASE_URL` variable:
+5. **CRITICAL:** Update your app's `DATABASE_URL` variable:
    ```bash
-   DATABASE_URL=${{Postgres.DATABASE_URL}}
+   DATABASE_URL=${{copilot-db.DATABASE_URL}}
    ```
+   
+   **⚠️ Important:** Replace `copilot-db` with your actual database service name:
+   - Go to your Railway project
+   - Click on your PostgreSQL database service
+   - Check the service name (top of the page)
+   - Use format: `${{YOUR-DB-SERVICE-NAME.DATABASE_URL}}`
 
 ---
 
@@ -258,17 +266,30 @@ If models are missing, see `DEPLOYMENT_FIX.md`.
 
 ---
 
-### Issue 3: Database Connection Error
+### Issue 3: Database Connection Error - DATABASE_URL Empty ⚠️ COMMON!
 
 **Symptoms:**
 ```
-sqlalchemy.exc.OperationalError: could not connect to server
+sqlalchemy.exc.ArgumentError: Could not parse SQLAlchemy URL from string ''
 ```
 
+**Root Cause:**
+DATABASE_URL variable references a non-existent database service name.
+
 **Solution:**
-1. Verify PostgreSQL is added to project
-2. Check `DATABASE_URL` variable is set to `${{Postgres.DATABASE_URL}}`
-3. Restart the service
+1. Go to Railway dashboard
+2. Find your PostgreSQL service name (e.g., `copilot-db`, `postgres`, etc.)
+3. Update DATABASE_URL to match:
+   ```bash
+   DATABASE_URL=${{copilot-db.DATABASE_URL}}
+   ```
+4. **The service name MUST match exactly** (case-sensitive)
+5. Save and wait for redeploy
+
+**Quick Test:**
+In Variables tab, click "Show" next to DATABASE_URL. If you see empty string or the literal `${{...}}`, it's wrong.
+
+**See RAILWAY_QUICK_FIX.md for detailed instructions.**
 
 ---
 
