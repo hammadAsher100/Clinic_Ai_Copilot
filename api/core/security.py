@@ -23,17 +23,19 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 # ── Demo users (in production, these would be in the database) ──────────
+# Pre-hashed passwords to avoid bcrypt initialization issues at module load time
+# Generated with: pwd_context.hash("demo2026") and pwd_context.hash("admin2026")
 DEMO_USERS: dict[str, dict] = {
     "clinician": {
         "username": "clinician",
         "full_name": "Dr. Demo Clinician",
-        "hashed_password": pwd_context.hash("demo2026"),
+        "hashed_password": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYIFj8T5s5K",  # demo2026
         "role": "clinician",
     },
     "admin": {
         "username": "admin",
         "full_name": "Admin User",
-        "hashed_password": pwd_context.hash("admin2026"),
+        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # admin2026
         "role": "admin",
     },
 }

@@ -14,6 +14,10 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     """Application settings — loaded from .env automatically."""
+    
+    model_config = {
+        "protected_namespaces": ()  # Allow "model_" prefix in field names
+    }
 
     # ── Database ─────────────────────────────────────────────────────────
     database_url: str = "sqlite:///./clinical_copilot.db"
