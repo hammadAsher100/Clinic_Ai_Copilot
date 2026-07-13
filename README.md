@@ -8,6 +8,16 @@
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.16.1-FF6F00.svg)](https://www.tensorflow.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
+## 🚀 Live Demo
+
+**[👉 Try the Live Application](https://clinical-ai-copilot-production.up.railway.app)**
+
+**Demo Credentials:**
+- **Username:** `clinician`
+- **Password:** `demo2026`
+
+> **Note:** First-time predictions may take 2-3 minutes as models load on-demand. Subsequent predictions are fast (<1 second).
+
 ---
 
 ## 📋 Table of Contents
