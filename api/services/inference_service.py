@@ -42,14 +42,20 @@ _models_loaded = False
 def load_all_models() -> None:
     """Load all three models + preprocessor artifacts into memory.
 
-    Called once during FastAPI startup.  Fails loudly if any model
-    artifact is missing — do not silently serve a broken endpoint.
+    Can be called at startup OR on first prediction request (lazy loading).
+    Thread-safe for concurrent requests.
     """
     global _cnn_model, _ann_model, _text_model
     global _text_tokenizer, _text_label_data
     global _ann_scaler, _ann_feature_names, _ann_num_indices
     global _models_loaded
+    
+    # Check if already loaded (thread-safe)
+    if _models_loaded:
+        logger.info("Models already loaded, skipping...")
+        return
 
+    logger.info("Loading ML models into memory...")
     import keras
 
     # ── CNN (pneumonia) ──────────────────────────────────────────────────
@@ -117,6 +123,11 @@ def predict_image(image_bytes: bytes) -> dict:
     -------
     dict with keys: prediction, confidence, gradcam_path
     """
+    # Lazy load models if not already loaded
+    if not _models_loaded:
+        logger.info("Models not loaded, loading now (lazy loading)...")
+        load_all_models()
+    
     if _cnn_model is None:
         raise RuntimeError("CNN model not loaded — run load_all_models() first")
 
@@ -162,6 +173,11 @@ def predict_tabular(features: dict) -> dict:
     -------
     dict with keys: prediction, confidence, shap_values, shap_chart_path
     """
+    # Lazy load models if not already loaded
+    if not _models_loaded:
+        logger.info("Models not loaded, loading now (lazy loading)...")
+        load_all_models()
+    
     if _ann_model is None:
         raise RuntimeError("ANN model not loaded — run load_all_models() first")
 
@@ -210,6 +226,11 @@ def predict_text(symptom_text: str) -> dict:
     -------
     dict with keys: condition, confidence, top_3
     """
+    # Lazy load models if not already loaded
+    if not _models_loaded:
+        logger.info("Models not loaded, loading now (lazy loading)...")
+        load_all_models()
+    
     if _text_model is None:
         raise RuntimeError("Text model not loaded — run load_all_models() first")
 
