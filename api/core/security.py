@@ -23,27 +23,29 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 # ── Demo users (in production, these would be in the database) ──────────
-# Pre-hashed passwords to avoid bcrypt initialization issues at module load time
-# Generated with: pwd_context.hash("demo2026") and pwd_context.hash("admin2026")
+# Using simple password verification to avoid bcrypt compatibility issues
 DEMO_USERS: dict[str, dict] = {
     "clinician": {
         "username": "clinician",
         "full_name": "Dr. Demo Clinician",
-        "hashed_password": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYIFj8T5s5K",  # demo2026
+        "password": "demo2026",  # In production, this would be hashed in DB
         "role": "clinician",
     },
     "admin": {
         "username": "admin",
         "full_name": "Admin User",
-        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # admin2026
+        "password": "admin2026",  # In production, this would be hashed in DB
         "role": "admin",
     },
 }
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Check a plaintext password against its bcrypt hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password: str, stored_password: str) -> bool:
+    """Check a plaintext password against stored password.
+    
+    For demo purposes, we use simple comparison. In production, use proper hashing.
+    """
+    return plain_password == stored_password
 
 
 def authenticate_user(username: str, password: str) -> Optional[dict]:
@@ -54,7 +56,7 @@ def authenticate_user(username: str, password: str) -> Optional[dict]:
     user = DEMO_USERS.get(username)
     if user is None:
         return None
-    if not verify_password(password, user["hashed_password"]):
+    if not verify_password(password, user["password"]):
         return None
     return user
 
