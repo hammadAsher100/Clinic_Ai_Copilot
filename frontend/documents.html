@@ -28,62 +28,147 @@
     </nav>
 
     <main class="container section">
-      <div class="section-header">
-        <div class="d-flex align-center gap-2">
-          <a href="/static/frontend/dashboard.html" style="color:var(--text-muted);">←</a>
-          <div class="card-icon amber" style="width:48px;height:48px;">📄</div>
-          <div>
-            <h1>Medical Document Upload</h1>
-            <span class="badge badge-amber">PDF Parser · Text Extraction</span>
+      <!-- ── Breadcrumb ────────────────────────────────────────────── -->
+      <div class="breadcrumb">
+        <div class="breadcrumb-item"><a href="/static/frontend/dashboard.html">Dashboard</a></div>
+        <div class="breadcrumb-item active">Medical Document Upload</div>
+      </div>
+
+      <!-- ── Header ────────────────────────────────────────────────── -->
+      <div class="feature-section-header" style="margin-bottom:32px;">
+        <div class="feature-section-icon card-icon amber" style="width:64px;height:64px;font-size:2rem;">📄</div>
+        <div class="feature-section-title">
+          <h1 style="font-size:2rem;margin-bottom:8px;">Medical Document Upload</h1>
+          <div class="d-flex align-center gap-1 mb-2" style="flex-wrap:wrap;">
+            <span class="badge badge-amber">PDF Parser</span>
+            <span class="badge badge-blue">Text Extraction</span>
+            <span class="badge badge-purple">OCR Enabled</span>
           </div>
+          <p style="font-size:0.95rem;">Upload and process clinical documents to extract structured medical information</p>
         </div>
       </div>
 
-      <div class="card mb-3">
-        <div class="grid-3">
+      <!-- ── Case Selection ────────────────────────────────────────── -->
+      <div class="feature-section">
+        <div class="feature-section-header">
+          <div class="feature-section-icon card-icon teal">📋</div>
+          <div class="feature-section-title">
+            <h2>Case Information</h2>
+            <p>Associate documents with an existing case or create a new one</p>
+          </div>
+        </div>
+        <div class="form-row">
           <div class="form-group">
-            <label for="case-select">Case</label>
+            <label for="case-select">Existing Case</label>
             <select id="case-select" class="form-control" onchange="selectCase()">
-              <option value="">Create New...</option>
+              <option value="">Create New Case...</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Case ID</label>
+            <label>Current Case ID</label>
             <input type="text" id="case-id-display" class="form-control" readonly value="Not created">
           </div>
         </div>
       </div>
 
+      <!-- ── Upload Section ────────────────────────────────────────── -->
       <div class="grid-2">
-        <div class="card">
-          <h3 class="mb-2">Upload Documents</h3>
-          <div class="file-upload" id="pdf-dropzone">
-            <input type="file" id="pdf-file" accept="application/pdf" onchange="handleFileSelect()" multiple>
-            <div class="file-upload-icon">📁</div>
-            <div class="file-upload-text">Drop PDF documents here</div>
-            <div class="file-upload-hint">Clinical notes, discharge summaries, lab reports</div>
+        <!-- Upload Area -->
+        <div class="feature-section">
+          <div class="feature-section-header">
+            <div class="feature-section-icon card-icon blue">📤</div>
+            <div class="feature-section-title">
+              <h2>Upload Documents</h2>
+              <p>Select or drag & drop PDF medical documents</p>
+            </div>
           </div>
-          <div id="file-list" class="mt-2"></div>
-          <button class="btn btn-primary btn-block mt-2" id="upload-btn" onclick="handleUpload()" disabled>
-            <span class="spinner"></span><span class="btn-text">Extract & Process</span>
+          
+          <div class="upload-zone" id="pdf-dropzone">
+            <input type="file" id="pdf-file" accept="application/pdf" onchange="handleFileSelect()" multiple>
+            <div class="upload-zone-icon">📁</div>
+            <div class="upload-zone-title">Drop PDF Documents Here</div>
+            <div class="upload-zone-description">or click to browse your files</div>
+            <div class="upload-zone-hint">Supports: Clinical notes, discharge summaries, lab reports | Max: 10 MB per file</div>
+          </div>
+          
+          <div id="file-list" class="file-list mt-3" style="display:none;"></div>
+          
+          <button class="btn btn-primary btn-block mt-3" id="upload-btn" onclick="handleUpload()" disabled>
+            <span class="spinner"></span>
+            <span class="btn-text">📝 Extract & Process Documents</span>
           </button>
         </div>
 
-        <div class="card">
-          <h3 class="mb-2">Supported Documents</h3>
-          <ul class="text-muted" style="line-height:1.8;">
-            <li>Discharge summaries</li>
-            <li>Clinical notes</li>
-            <li>Lab reports</li>
-            <li>Radiology reports</li>
-            <li>Patient history forms</li>
-          </ul>
+        <!-- Supported Documents Info -->
+        <div class="feature-section" style="background: linear-gradient(135deg, rgba(255, 179, 71, 0.08), rgba(78, 140, 255, 0.08));">
+          <div class="feature-section-header">
+            <div class="feature-section-icon card-icon amber">ℹ️</div>
+            <div class="feature-section-title">
+              <h2>Supported Document Types</h2>
+              <p>Compatible medical document formats</p>
+            </div>
+          </div>
+          
+          <div class="activity-feed">
+            <div class="activity-item" style="background:var(--bg-primary);">
+              <div class="activity-icon card-icon blue">📋</div>
+              <div class="activity-content">
+                <div class="activity-title">Discharge Summaries</div>
+                <div class="activity-meta">Hospital discharge documentation with diagnosis and treatment plans</div>
+              </div>
+            </div>
+            
+            <div class="activity-item" style="background:var(--bg-primary);">
+              <div class="activity-icon card-icon teal">🩺</div>
+              <div class="activity-content">
+                <div class="activity-title">Clinical Notes</div>
+                <div class="activity-meta">SOAP notes, progress notes, and consultation records</div>
+              </div>
+            </div>
+            
+            <div class="activity-item" style="background:var(--bg-primary);">
+              <div class="activity-icon card-icon purple">🔬</div>
+              <div class="activity-content">
+                <div class="activity-title">Laboratory Reports</div>
+                <div class="activity-meta">Blood work, pathology, and diagnostic test results</div>
+              </div>
+            </div>
+            
+            <div class="activity-item" style="background:var(--bg-primary);">
+              <div class="activity-icon card-icon coral">🏥</div>
+              <div class="activity-content">
+                <div class="activity-title">Radiology Reports</div>
+                <div class="activity-meta">X-ray, CT, MRI, and imaging study interpretations</div>
+              </div>
+            </div>
+            
+            <div class="activity-item" style="background:var(--bg-primary);">
+              <div class="activity-icon card-icon amber">📝</div>
+              <div class="activity-content">
+                <div class="activity-title">Patient History Forms</div>
+                <div class="activity-meta">Medical history questionnaires and intake forms</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="alert alert-info mt-3">
+            <strong>💡 Tip:</strong> For best results, ensure PDFs are text-based or high-quality scans. Our OCR engine can handle both digital and scanned documents.
+          </div>
         </div>
       </div>
 
-      <div id="results-section" class="hidden mt-3">
-        <h2>Extraction Results</h2>
-        <div id="results-grid" class="grid-2"></div>
+      <!-- ── Extraction Results Section ───────────────────────────── -->
+      <div id="results-section" class="hidden">
+        <div class="feature-section">
+          <div class="feature-section-header">
+            <div class="feature-section-icon card-icon purple">📊</div>
+            <div class="feature-section-title">
+              <h2>Extraction Results</h2>
+              <p>Processed documents with extracted medical information</p>
+            </div>
+          </div>
+          <div id="results-grid" class="grid-2"></div>
+        </div>
       </div>
     </main>
   </div>
@@ -94,6 +179,37 @@
     let currentCaseId = null;
     let selectedFiles = [];
     getCurrentUser().then(u => document.getElementById('user-display').textContent = u.full_name).catch(()=>{});
+
+    // Drag and drop functionality
+    const dropzone = document.getElementById('pdf-dropzone');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, () => {
+        dropzone.classList.add('dragover');
+      }, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, () => {
+        dropzone.classList.remove('dragover');
+      }, false);
+    });
+    
+    dropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      document.getElementById('pdf-file').files = files;
+      handleFileSelect();
+    }, false);
 
     (async function() {
       const params = new URLSearchParams(location.search);
@@ -118,11 +234,33 @@
     function handleFileSelect() {
       selectedFiles = Array.from(document.getElementById('pdf-file').files);
       const list = document.getElementById('file-list');
+      list.style.display = selectedFiles.length > 0 ? 'flex' : 'none';
       list.innerHTML = '';
+      
       selectedFiles.forEach((f, i) => {
-        list.innerHTML += `<div style="padding:8px;background:var(--bg-primary);border-radius:6px;margin-bottom:4px;font-size:0.85rem;">${f.name}</div>`;
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        item.innerHTML = `
+          <div class="file-icon">📄</div>
+          <div class="file-info">
+            <div class="file-name">${f.name}</div>
+            <div class="file-size">${(f.size / 1024).toFixed(1)} KB · PDF Document</div>
+          </div>
+          <span class="badge badge-amber">Ready</span>
+          <button onclick="removeFile(${i})" class="btn btn-danger btn-sm">Remove</button>
+        `;
+        list.appendChild(item);
       });
-      document.getElementById('upload-btn').disabled = false;
+      
+      document.getElementById('upload-btn').disabled = selectedFiles.length === 0;
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      const dt = new DataTransfer();
+      selectedFiles.forEach(f => dt.items.add(f));
+      document.getElementById('pdf-file').files = dt.files;
+      handleFileSelect();
     }
 
     async function handleUpload() {
@@ -153,13 +291,54 @@
       document.getElementById('results-section').classList.remove('hidden');
       const grid = document.getElementById('results-grid');
       grid.innerHTML = '';
+      
       results.forEach(r => {
         const card = document.createElement('div');
-        card.className = 'card';
+        card.className = 'result-container';
         card.innerHTML = `
-          <h4>${r.filename}</h4>
-          <p class="text-muted">${r.num_pages} pages extracted</p>
-          <details><summary>View Text</summary><pre style="font-size:0.75rem;max-height:200px;overflow:auto;">${r.raw_text || 'No text'}</pre></details>
+          <div class="result-header">
+            <div class="d-flex align-center gap-2">
+              <div class="card-icon amber" style="width:48px;height:48px;font-size:1.5rem;">📄</div>
+              <div>
+                <h4 style="margin-bottom:4px;">${r.filename}</h4>
+                <span class="badge badge-teal">✓ Processed</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-section">
+            <div class="form-section-title">📊 Document Information</div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;font-size:0.9rem;">
+              <div>
+                <div style="color:var(--text-muted);font-size:0.8rem;margin-bottom:4px;">Pages Extracted</div>
+                <div style="font-weight:600;color:var(--text-primary);">${r.num_pages} pages</div>
+              </div>
+              <div>
+                <div style="color:var(--text-muted);font-size:0.8rem;margin-bottom:4px;">Case ID</div>
+                <div style="font-weight:600;color:var(--accent-teal);">#${r.case_id}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-section">
+            <details style="cursor:pointer;">
+              <summary style="font-weight:600;color:var(--text-primary);padding:8px 0;user-select:none;">
+                📝 View Extracted Text
+              </summary>
+              <div class="narrative-block" style="margin-top:12px;max-height:300px;overflow:auto;font-size:0.85rem;font-family:monospace;">
+                ${r.raw_text || 'No text extracted'}
+              </div>
+            </details>
+          </div>
+          
+          <div class="d-flex gap-1 mt-3">
+            <button class="btn btn-secondary flex-1" onclick="window.location.href='/static/frontend/review.html?case_id=${r.case_id}'">
+              Review Case →
+            </button>
+            <button class="btn btn-primary" onclick="showToast('Download feature coming soon!', 'info')">
+              Download
+            </button>
+          </div>
         `;
         grid.appendChild(card);
       });
