@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     """Application settings — loaded from .env automatically."""
     
     model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False,
+        "extra": "ignore",
         "protected_namespaces": ()  # Allow "model_" prefix in field names
     }
 
@@ -50,12 +54,6 @@ class Settings(BaseSettings):
     # ── File paths ───────────────────────────────────────────────────────
     upload_dir: str = "data/uploads"
     reports_dir: str = "data/reports"
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-        extra = "ignore"
 
 
 @lru_cache()
