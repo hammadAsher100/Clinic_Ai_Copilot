@@ -28,36 +28,60 @@
     </nav>
 
     <main class="container section">
-      <div class="section-header">
-        <div class="d-flex align-center gap-2">
-          <a href="/static/frontend/dashboard.html" style="color:var(--text-muted);">←</a>
-          <div class="card-icon coral" style="width:48px;height:48px;">❤️</div>
-          <div>
-            <h1>Heart Disease Risk Assessment</h1>
-            <span class="badge badge-coral">ANN · 13 Clinical Features</span>
+      <!-- ── Breadcrumb ────────────────────────────────────────────── -->
+      <div class="breadcrumb">
+        <div class="breadcrumb-item"><a href="/static/frontend/dashboard.html">Dashboard</a></div>
+        <div class="breadcrumb-item active">Heart Disease Risk Assessment</div>
+      </div>
+
+      <!-- ── Header ────────────────────────────────────────────────── -->
+      <div class="feature-section-header" style="margin-bottom:32px;">
+        <div class="feature-section-icon card-icon coral" style="width:64px;height:64px;font-size:2rem;">❤️</div>
+        <div class="feature-section-title">
+          <h1 style="font-size:2rem;margin-bottom:8px;">Heart Disease Risk Assessment</h1>
+          <div class="d-flex align-center gap-1 mb-2" style="flex-wrap:wrap;">
+            <span class="badge badge-coral">ANN Model</span>
+            <span class="badge badge-purple">13 Clinical Features</span>
+            <span class="badge badge-amber">SHAP Explainability</span>
           </div>
+          <p style="font-size:0.95rem;">Assess cardiovascular risk using artificial neural networks with SHAP feature importance analysis</p>
         </div>
       </div>
 
-      <div class="card mb-3">
-        <div class="grid-3">
+      <!-- ── Case Selection ────────────────────────────────────────── -->
+      <div class="feature-section">
+        <div class="feature-section-header">
+          <div class="feature-section-icon card-icon teal">📋</div>
+          <div class="feature-section-title">
+            <h2>Case Information</h2>
+            <p>Select an existing case or create a new one</p>
+          </div>
+        </div>
+        <div class="form-row">
           <div class="form-group">
-            <label for="case-select">Case</label>
+            <label for="case-select">Existing Case</label>
             <select id="case-select" class="form-control" onchange="selectCase()">
               <option value="">Create New...</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Case ID</label>
+            <label>Current Case ID</label>
             <input type="text" id="case-id-display" class="form-control" readonly value="Not created">
           </div>
         </div>
       </div>
 
-      <div class="grid-2">
-        <div class="card">
-          <h3 class="mb-2">Clinical Features</h3>
-          <div class="grid-2" style="gap:10px;">
+      <!-- ── Data Entry Section ────────────────────────────────────── -->
+      <div class="feature-section">
+        <div class="feature-section-header">
+          <div class="feature-section-icon card-icon blue">📝</div>
+          <div class="feature-section-title">
+            <h2>Clinical Features Input</h2>
+            <p>Enter patient vitals and lab values for risk assessment</p>
+          </div>
+        </div>
+
+        <div class="form-row">
             <div class="form-group"><label>Age</label><input type="number" id="age" class="form-control" value="55"></div>
             <div class="form-group"><label>Sex (0=F,1=M)</label><input type="number" id="sex" class="form-control" min="0" max="1" value="1"></div>
             <div class="form-group"><label>Chest Pain (0-3)</label><input type="number" id="cp" class="form-control" min="0" max="3" value="2"></div>
