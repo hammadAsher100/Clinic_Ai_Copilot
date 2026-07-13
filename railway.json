@@ -6,8 +6,6 @@
   "deploy": {
     "numReplicas": 1,
     "startCommand": "uvicorn api.main:app --host 0.0.0.0",
-    "healthcheckPath": "/health",
-    "healthcheckTimeout": 600,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
