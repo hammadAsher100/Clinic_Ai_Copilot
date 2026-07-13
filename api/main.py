@@ -33,8 +33,14 @@ async def lifespan(app: FastAPI):
 
     logger.info("Loading ML models into memory...")
     try:
-        from api.services.inference_service import load_all_models
-        load_all_models()
+        # Load models in background to avoid startup timeout
+        import os
+        if os.getenv("SKIP_MODEL_LOAD_ON_STARTUP", "false").lower() == "true":
+            logger.warning("Skipping model load on startup (SKIP_MODEL_LOAD_ON_STARTUP=true)")
+            logger.info("Models will be loaded on first prediction request")
+        else:
+            from api.services.inference_service import load_all_models
+            load_all_models()
     except Exception as e:
         logger.error("Model loading failed: %s — prediction endpoints will be unavailable", e)
 
