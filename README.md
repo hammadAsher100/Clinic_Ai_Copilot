@@ -12,9 +12,6 @@
 
 **[👉 Try the Live Application](https://clinical-ai-copilot-production.up.railway.app)**
 
-**Demo Credentials:**
-- **Username:** `clinician`
-- **Password:** `demo2026`
 
 > **Note:** First-time predictions may take 2-3 minutes as models load on-demand. Subsequent predictions are fast (<1 second).
 
