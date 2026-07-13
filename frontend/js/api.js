@@ -22,7 +22,9 @@ function clearToken() {
 }
 
 function isAuthenticated() {
-  return !!getToken();
+  // Always return true for demo - skip authentication
+  return true;
+  // return !!getToken();
 }
 
 function authHeaders() {
@@ -53,11 +55,19 @@ async function login(username, password) {
 }
 
 async function getCurrentUser() {
-  const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
-    headers: authHeaders(),
-  });
-  if (!res.ok) throw new Error('Not authenticated');
-  return res.json();
+  // Return dummy user for demo - skip authentication
+  return {
+    username: "demo",
+    full_name: "Demo Clinician",
+    role: "clinician"
+  };
+  
+  // Original code:
+  // const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
+  //   headers: authHeaders(),
+  // });
+  // if (!res.ok) throw new Error('Not authenticated');
+  // return res.json();
 }
 
 function logout() {

@@ -182,11 +182,13 @@
 
   <script src="/static/frontend/js/api.js"></script>
   <script>
-    if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
+    // Skip authentication check for demo
+    // if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
 
-    getCurrentUser().then(user => {
-      document.getElementById('user-display').textContent = user.full_name;
-    }).catch(() => {});
+    // Skip user loading for demo
+    // getCurrentUser().then(user => {
+    //   document.getElementById('user-display').textContent = user.full_name;
+    // }).catch(() => {});
 
     // Load dashboard stats
     (async function loadDashboard() {
