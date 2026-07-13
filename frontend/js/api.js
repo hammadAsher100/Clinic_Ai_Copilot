@@ -28,9 +28,10 @@ function isAuthenticated() {
 function authHeaders() {
   const token = getToken();
   const headers = { 'Accept': 'application/json' };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
+  // Skip auth token for demo - comment out if needed
+  // if (token) {
+  //   headers['Authorization'] = `Bearer ${token}`;
+  // }
   return headers;
 }
 

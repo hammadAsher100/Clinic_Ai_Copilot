@@ -46,34 +46,8 @@
 
   <script src="/static/frontend/js/api.js"></script>
   <script>
-    // Redirect if already authenticated
-    if (isAuthenticated()) {
-      window.location.href = '/static/frontend/dashboard.html';
-    }
-
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('login-btn');
-      const errorEl = document.getElementById('login-error');
-
-      btn.classList.add('loading');
-      btn.disabled = true;
-      errorEl.classList.add('hidden');
-
-      try {
-        await login(
-          document.getElementById('username').value,
-          document.getElementById('password').value
-        );
-        window.location.href = '/static/frontend/dashboard.html';
-      } catch (err) {
-        errorEl.textContent = err.message;
-        errorEl.classList.remove('hidden');
-      } finally {
-        btn.classList.remove('loading');
-        btn.disabled = false;
-      }
-    });
+    // Auto-redirect to dashboard (skip login for demo)
+    window.location.href = '/static/frontend/dashboard.html';
   </script>
 </body>
 </html>
