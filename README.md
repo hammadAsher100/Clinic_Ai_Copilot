@@ -93,7 +93,6 @@ A production-ready platform that:
 
 - ⚡ FastAPI backend with async operations
 - 🗄️ PostgreSQL + SQLite database support
-- 🔐 JWT authentication
 - 📄 PDF report generation
 - 🎨 Responsive web interface
 - 🐳 Docker deployment ready
@@ -113,11 +112,11 @@ A production-ready platform that:
 ┌───────────────────────────▼─────────────────────────────────┐
 │                     FastAPI Backend                          │
 │  ┌──────────┬──────────┬──────────┬──────────┬──────────┐  │
-│  │  Auth    │  Image   │ Tabular  │   Text   │   HITL   │  │
+│  │  Image   │ Tabular  │   Text   │   HITL   │ Reports  │  │
 │  │  Router  │  Router  │  Router  │  Router  │  Router  │  │
-│  └─────┬────┴────┬─────┴────┬─────┴────┬─────┴────┬─────┘  │
-│        │         │          │          │          │         │
-│  ┌─────▼─────────▼──────────▼──────────▼──────────▼─────┐  │
+│  └────┬─────┴────┬─────┴────┬─────┴────┬─────┴────┬─────┘  │
+│       │          │          │          │          │         │
+│  ┌────▼──────────▼──────────▼──────────▼──────────▼─────┐  │
 │  │            Inference Service                          │  │
 │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐           │  │
 │  │  │   CNN    │  │   ANN    │  │  BiLSTM  │           │  │
@@ -199,9 +198,6 @@ cp .env.example .env
 ```env
 # Database (uses SQLite by default for local development)
 DATABASE_URL=sqlite:///./clinical_copilot.db
-
-# JWT Secret (change this in production!)
-SECRET_KEY=your-super-secret-key-min-32-characters-change-in-production
 
 # LLM API (optional - for narrative generation)
 GROQ_API_KEY=your_groq_api_key_here
@@ -311,12 +307,11 @@ mlops-hackathon/
 │   ├── core/                     # Configuration, logging, security
 │   │   ├── config.py             # Environment settings
 │   │   ├── logging_config.py    # Logging setup
-│   │   └── security.py           # JWT authentication
+│   │   └── security.py           # Security utilities
 │   ├── db/                       # Database layer
 │   │   ├── models.py             # SQLAlchemy ORM models
 │   │   └── session.py            # Database session management
 │   ├── routers/                  # API route handlers
-│   │   ├── auth.py               # Authentication endpoints
 │   │   ├── image.py              # X-ray prediction
 │   │   ├── tabular.py            # Heart disease prediction
 │   │   ├── text.py               # Symptom classification
@@ -325,7 +320,6 @@ mlops-hackathon/
 │   │   ├── reports.py            # PDF report generation
 │   │   └── documents.py          # Document upload/parsing
 │   ├── schemas/                  # Pydantic models
-│   │   ├── auth.py               # Auth request/response
 │   │   ├── case.py               # Case models
 │   │   ├── prediction.py         # Prediction models
 │   │   └── hitl.py               # HITL decision models
@@ -382,8 +376,6 @@ mlops-hackathon/
 ├── Dockerfile                    # Container definition
 ├── railway.json                  # Railway deployment config
 ├── requirements.txt              # Python dependencies
-├── GAMMA_PRESENTATION_PROMPT.md  # Hackathon presentation guide
-├── HACKATHON_EVALUATION_REPORT.md # Rubric assessment
 └── README.md                     # This file
 ```
 
@@ -394,36 +386,6 @@ mlops-hackathon/
 ### Base URL
 ```
 http://localhost:8000
-```
-
-### Authentication
-
-**Register User:**
-```bash
-POST /api/v1/auth/register
-Content-Type: application/json
-
-{
-  "username": "clinician1",
-  "email": "clinician@hospital.com",
-  "password": "secure_password"
-}
-```
-
-**Login:**
-```bash
-POST /api/v1/auth/login
-Content-Type: application/x-www-form-urlencoded
-
-username=clinician1&password=secure_password
-```
-
-**Response:**
-```json
-{
-  "access_token": "eyJhbGc...",
-  "token_type": "bearer"
-}
 ```
 
 ### Prediction Endpoints
@@ -629,11 +591,6 @@ GET /api/v1/cases/{case_id}/report/download
 DATABASE_URL=sqlite:///./clinical_copilot.db
 # Or PostgreSQL: postgresql://user:password@localhost:5432/dbname
 
-# JWT Authentication
-SECRET_KEY=your-super-secret-key-min-32-characters
-JWT_ALGORITHM=HS256
-JWT_EXPIRATION_MINUTES=480
-
 # Model Paths
 MODEL_REGISTRY_PATH=ml/registry
 CNN_MODEL_PATH=ml/registry/cnn_pneumonia.h5
@@ -826,15 +783,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Project Maintainer:** Hammad Asher  
 **GitHub:** [@hammadAsher100](https://github.com/hammadAsher100)  
-**Repository:** [smit-hackathon](https://github.com/hammadAsher100/smit-hackathon)
+**Repository:** [Clinic Ai Copilot](https://github.com/hammadAsher100/smit-hackathon)
 
 ---
 
 ## 🎯 Hackathon Information
 
 This project was developed for the **AI Innovation Hackathon 2026**.
-
-**Evaluation Score:** 85-90 / 110 points
 
 **Key Achievements:**
 - ✅ Multi-modal AI integration (Image + Tabular + Text)
@@ -843,16 +798,10 @@ This project was developed for the **AI Innovation Hackathon 2026**.
 - ✅ Production-ready architecture (FastAPI + Docker + PostgreSQL)
 - ✅ Comprehensive documentation and testing
 
-**See detailed evaluation:** [HACKATHON_EVALUATION_REPORT.md](HACKATHON_EVALUATION_REPORT.md)
-
-**For presentation slides:** See [GAMMA_PRESENTATION_PROMPT.md](GAMMA_PRESENTATION_PROMPT.md)
-
 ---
 
 <div align="center">
 
 **⭐ Star this repository if you found it helpful!**
-
-Made with ❤️ for better healthcare through AI
 
 </div>
