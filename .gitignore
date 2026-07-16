@@ -49,5 +49,12 @@ Thumbs.db
 
 # Windows-specific files
 *.whl
-*.whl
+
+# Interview preparation documents (not for public repo)
+INTERVIEW_PREPARATION.md
+PROJECT_SUMMARY.md
+MODEL_EVALUATION_REPORT.md
+EVALUATION_COMPLETE.md
+SLIDES_CHEATSHEET.md
+TECHNICAL_AUDIT.md
 
