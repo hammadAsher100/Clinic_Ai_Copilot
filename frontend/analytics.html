@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model Analytics Dashboard — Clinical AI Co-Pilot</title>
+  <link rel="stylesheet" href="/static/frontend/css/styles.css">
+  <style>
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .viz-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .viz-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .viz-card h3 {
+      margin: 0 0 8px 0;
+      color: var(--text-primary);
+      font-size: 1.25rem;
+    }
+    
+    .viz-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+    
+    .viz-card iframe {
+      width: 100%;
+      height: 500px;
+      border: none;
+      border-radius: 8px;
+    }
+    
+    .viz-card.full-width {
+      grid-column: 1 / -1;
+    }
+    
+    .viz-card.full-width iframe {
+      height: 600px;
+    }
+    
+    .badge-interactive {
+      display: inline-block;
+      padding: 4px 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    
+    @media (max-width: 768px) {
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="container">
+        <a href="/static/frontend/dashboard.html" class="navbar-brand">
+          <div class="logo-icon">🏥</div>
+          Clinical AI Co-Pilot
+        </a>
+        <ul class="navbar-links">
+          <li><a href="/static/frontend/dashboard.html">Dashboard</a></li>
+          <li><a href="/static/frontend/cases.html">Cases</a></li>
+          <li><a href="/static/frontend/review.html">Review</a></li>
+          <li><a href="/static/frontend/analytics.html" class="active">Analytics</a></li>
+        </ul>
+        <div class="user-badge">
+          <span class="dot"></span>
+          <span id="user-display">Demo User</span>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container section">
+      <!-- Header -->
+      <div class="d-flex align-center justify-between mb-3" style="flex-wrap:wrap;gap:12px;">
+        <div>
+          <h1>📊 Model Performance Analytics</h1>
+          <p>Interactive visualizations of model evaluation results</p>
+        </div>
+      </div>
+
+      <!-- Performance Dashboard -->
+      <div class="analytics-grid">
+        <div class="viz-card full-width">
+          <span class="badge-interactive">🎯 Interactive</span>
+          <h3>Performance Dashboard</h3>
+          <p>Comprehensive view of all three models with accuracy, precision, recall, F1-score, and test set sizes</p>
+          <iframe src="/static/frontend/analytics/performance_dashboard_interactive.html"></iframe>
+        </div>
+      </div>
+
+      <!-- Metrics Comparison -->
+      <div class="analytics-grid">
+        <div class="viz-card">
+          <span class="badge-interactive">📈 Interactive</span>
+          <h3>Metrics Comparison</h3>
+          <p>Side-by-side comparison of all models across key performance metrics</p>
+          <iframe src="/static/frontend/analytics/metrics_comparison_interactive.html"></iframe>
+        </div>
+
+        <!-- Architecture Diagram -->
+        <div class="viz-card">
+          <span class="badge-interactive">🏗️ Interactive</span>
+          <h3>System Architecture</h3>
+          <p>Visual representation of the Clinical AI Co-Pilot system layers and data flow</p>
+          <iframe src="/static/frontend/analytics/architecture_diagram_interactive.html"></iframe>
+        </div>
+      </div>
+
+      <!-- Heart Disease Model Deep Dive -->
+      <div class="card mb-3" style="background: linear-gradient(135deg, rgba(44, 160, 44, 0.05), rgba(44, 160, 44, 0.1));">
+        <h2 style="margin-bottom: 16px;">❤️ Heart Disease Model - Validated Results</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 24px;">
+          Our strongest model with <strong>98.2% AUC</strong> on the UCI Heart Disease benchmark dataset
+        </p>
+        
+        <div class="analytics-grid">
+          <div class="viz-card">
+            <span class="badge-interactive">📈 Interactive</span>
+            <h3>ROC Curve</h3>
+            <p>Receiver Operating Characteristic curve showing model's discriminative ability (AUC = 0.982)</p>
+            <iframe src="/static/frontend/analytics/ann_roc_curve_interactive.html"></iframe>
+          </div>
+
+          <div class="viz-card">
+            <span class="badge-interactive">🎯 Interactive</span>
+            <h3>Confusion Matrix</h3>
+            <p>Prediction accuracy breakdown - hover for detailed counts and percentages</p>
+            <iframe src="/static/frontend/analytics/ann_confusion_matrix_interactive.html"></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explainability -->
+      <div class="card mb-3" style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.05), rgba(255, 193, 7, 0.1));">
+        <h2 style="margin-bottom: 16px;">🔍 Model Explainability</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 24px;">
+          Understanding what drives model predictions through feature importance analysis
+        </p>
+        
+        <div class="analytics-grid">
+          <div class="viz-card full-width">
+            <span class="badge-interactive">🔍 Interactive</span>
+            <h3>Feature Importance (SHAP Values)</h3>
+            <p>Which clinical features have the most impact on heart disease risk predictions</p>
+            <iframe src="/static/frontend/analytics/feature_importance_interactive.html" style="height: 400px;"></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model Information -->
+      <div class="card mt-3">
+        <h3 class="mb-2">📋 About These Metrics</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label style="font-weight: 600; color: var(--text-primary);">Evaluation Approach</label>
+            <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">
+              All models evaluated on held-out test sets using stratified train/test splits. 
+              Metrics computed using scikit-learn on predictions from saved model artifacts.
+            </p>
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 600; color: var(--text-primary);">Data Sources</label>
+            <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">
+              <strong>Heart Disease (ANN):</strong> UCI Heart Disease dataset (real patient data)<br>
+              <strong>Pneumonia (CNN):</strong> Synthetic chest X-ray images<br>
+              <strong>Symptoms (BiLSTM):</strong> Symptom2Disease dataset
+            </p>
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 600; color: var(--text-primary);">Interactivity</label>
+            <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">
+              All visualizations are powered by Plotly and are fully interactive. 
+              Hover over data points for details, zoom, pan, and export images as needed.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Options -->
+      <div class="card mt-3" style="text-align: center;">
+        <h3 class="mb-2">💾 Export Visualizations</h3>
+        <p class="text-muted mb-3">Static PNG versions available for presentations</p>
+        <div class="d-flex gap-2" style="justify-content: center; flex-wrap: wrap;">
+          <a href="/static/uploads/performance_dashboard.png" download class="btn btn-secondary btn-sm">
+            📊 Performance Dashboard
+          </a>
+          <a href="/static/uploads/metrics_comparison.png" download class="btn btn-secondary btn-sm">
+            📈 Metrics Comparison
+          </a>
+          <a href="/static/uploads/ann_roc_curve_plotly.png" download class="btn btn-secondary btn-sm">
+            ❤️ ROC Curve
+          </a>
+          <a href="/static/uploads/feature_importance.png" download class="btn btn-secondary btn-sm">
+            🔍 Feature Importance
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/frontend/js/api.js"></script>
+  <script>
+    if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
+    
+    getCurrentUser().then(user => {
+      document.getElementById('user-display').textContent = user.full_name;
+    }).catch(() => {});
+  </script>
+</body>
+</html>

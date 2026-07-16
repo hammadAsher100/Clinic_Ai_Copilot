@@ -276,15 +276,44 @@
 
     async function handleGenerateNarrative() {
       if (!currentCaseId) return;
+      const btn = event.target.closest('button');
+      if (btn) {
+        btn.classList.add('loading');
+        btn.disabled = true;
+      }
+      
       try {
         showLoading('Generating clinical narrative...');
         const result = await summarizeCase(currentCaseId);
         document.getElementById('narrative-content').textContent = result.narrative;
         hideLoading();
-        showToast('Narrative generated', 'success');
+        showToast('Narrative generated successfully!', 'success');
       } catch (err) {
         hideLoading();
-        showToast(err.message, 'error');
+        const narrativeContent = document.getElementById('narrative-content');
+        narrativeContent.innerHTML = `
+          <div style="padding:20px;background:rgba(255,193,7,0.1);border-left:4px solid var(--accent-amber);border-radius:8px;">
+            <h4 style="color:var(--accent-amber);margin-bottom:12px;">⚠️ LLM Service Unavailable</h4>
+            <p style="margin-bottom:12px;line-height:1.6;">
+              The clinical narrative generation service is currently unavailable. This could be due to:
+            </p>
+            <ul style="margin-left:20px;margin-bottom:12px;line-height:1.8;">
+              <li>Groq API key not configured</li>
+              <li>API rate limit reached</li>
+              <li>Network connectivity issues</li>
+            </ul>
+            <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.6;">
+              <strong>Note:</strong> All diagnostic predictions have been made by the dedicated CNN, ANN, and BiLSTM models. 
+              The LLM is only used for generating a plain-language summary. You can still proceed with the review and report generation.
+            </p>
+          </div>
+        `;
+        showToast('LLM service unavailable - using fallback message', 'warning');
+      } finally {
+        if (btn) {
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        }
       }
     }
 
