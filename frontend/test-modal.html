@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modal System Test — Clinical AI Co-Pilot</title>
+  <link rel="stylesheet" href="/static/frontend/css/styles.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <nav class="navbar">
+      <div class="container">
+        <a href="/static/frontend/dashboard.html" class="navbar-brand">
+          <div class="logo-icon">🏥</div>
+          Clinical AI Co-Pilot
+        </a>
+      </div>
+    </nav>
+
+    <main class="container section">
+      <div class="section-header">
+        <h1>🎨 Modal System Test</h1>
+        <p>Test the beautiful new modal dialogs</p>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-section-header">
+          <div class="feature-section-icon card-icon purple">💬</div>
+          <div class="feature-section-title">
+            <h2>Modal Types</h2>
+            <p>Click the buttons below to test different modal dialogs</p>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <!-- Info Alert -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon blue">ℹ️</div>
+              <div>
+                <h3>Info Alert</h3>
+              </div>
+            </div>
+            <p>Simple information message with OK button</p>
+            <button class="btn btn-primary btn-block mt-2" onclick="testInfo()">
+              Show Info
+            </button>
+          </div>
+
+          <!-- Success Alert -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon teal">✅</div>
+              <div>
+                <h3>Success Alert</h3>
+              </div>
+            </div>
+            <p>Success notification message</p>
+            <button class="btn btn-success btn-block mt-2" onclick="testSuccess()">
+              Show Success
+            </button>
+          </div>
+
+          <!-- Warning Alert -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon amber">⚠️</div>
+              <div>
+                <h3>Warning Alert</h3>
+              </div>
+            </div>
+            <p>Warning message for caution</p>
+            <button class="btn btn-warning btn-block mt-2" onclick="testWarning()">
+              Show Warning
+            </button>
+          </div>
+
+          <!-- Error Alert -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon coral">❌</div>
+              <div>
+                <h3>Error Alert</h3>
+              </div>
+            </div>
+            <p>Error notification message</p>
+            <button class="btn btn-danger btn-block mt-2" onclick="testError()">
+              Show Error
+            </button>
+          </div>
+
+          <!-- Confirm Dialog -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon purple">❓</div>
+              <div>
+                <h3>Confirm Dialog</h3>
+              </div>
+            </div>
+            <p>Yes/No confirmation dialog</p>
+            <button class="btn btn-primary btn-block mt-2" onclick="testConfirm()">
+              Show Confirm
+            </button>
+          </div>
+
+          <!-- Prompt Dialog -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon purple">✏️</div>
+              <div>
+                <h3>Prompt Dialog</h3>
+              </div>
+            </div>
+            <p>Input dialog with text field</p>
+            <button class="btn btn-primary btn-block mt-2" onclick="testPrompt()">
+              Show Prompt
+            </button>
+          </div>
+        </div>
+
+        <div class="card mt-3">
+          <h3 class="mb-2">📋 Test Result</h3>
+          <div id="result" class="narrative-block" style="min-height: 60px;">
+            Click any button above to test the modal system. The result will appear here.
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/frontend/js/modal.js"></script>
+  <script>
+    const resultDiv = document.getElementById('result');
+
+    async function testInfo() {
+      await modal.info(
+        'This is an informational message. The system is working as expected.',
+        'Information'
+      );
+      resultDiv.textContent = '✅ Info modal closed';
+    }
+
+    async function testSuccess() {
+      await modal.success(
+        'Operation completed successfully! The patient record has been updated.',
+        'Success'
+      );
+      resultDiv.textContent = '✅ Success modal closed';
+    }
+
+    async function testWarning() {
+      await modal.warning(
+        'Please review the patient data carefully before proceeding. Some fields may require attention.',
+        'Warning'
+      );
+      resultDiv.textContent = '⚠️ Warning modal closed';
+    }
+
+    async function testError() {
+      await modal.error(
+        'An error occurred while processing your request. Please try again or contact support.',
+        'Error'
+      );
+      resultDiv.textContent = '❌ Error modal closed';
+    }
+
+    async function testConfirm() {
+      const result = await modal.confirm(
+        'Are you sure you want to proceed with this action? This cannot be undone.',
+        'Confirm Action'
+      );
+      resultDiv.textContent = result 
+        ? '✅ User clicked Confirm (true)' 
+        : '❌ User clicked Cancel (false)';
+    }
+
+    async function testPrompt() {
+      const result = await modal.prompt(
+        'Enter patient name:',
+        'John Doe',
+        'Patient Information',
+        'Full name'
+      );
+      if (result !== null) {
+        resultDiv.textContent = `✅ User entered: "${result}"`;
+      } else {
+        resultDiv.textContent = '❌ User clicked Cancel (null)';
+      }
+    }
+
+    // Show welcome message
+    setTimeout(() => {
+      modal.info(
+        'Welcome to the Modal System Test! Click any button to see the beautiful new modal dialogs in action.',
+        'Welcome'
+      );
+    }, 500);
+  </script>
+</body>
+</html>

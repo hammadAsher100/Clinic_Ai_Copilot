@@ -84,6 +84,7 @@
 
   <script src="/static/frontend/js/api.js"></script>
   <script src="/static/frontend/js/charts.js"></script>
+  <script src="/static/frontend/js/modal.js"></script>
   <script>
     if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
 
@@ -253,8 +254,13 @@
       }
     }
 
-    function showEditDialog(modality, currentValue) {
-      const newValue = prompt(`Edit ${modality} prediction (current: ${currentValue}):`, currentValue);
+    async function showEditDialog(modality, currentValue) {
+      const newValue = await modal.prompt(
+        `Edit ${modality} prediction:`, 
+        currentValue, 
+        `Edit ${modality} Prediction`,
+        'Enter new value'
+      );
       if (newValue && newValue !== currentValue) {
         handleDecision(modality, 'edit', newValue);
       }

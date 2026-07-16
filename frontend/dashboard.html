@@ -218,6 +218,7 @@
   </div>
 
   <script src="/static/frontend/js/api.js"></script>
+  <script src="/static/frontend/js/modal.js"></script>
   <script>
     // Skip authentication check for demo
     // if (!isAuthenticated()) window.location.href = '/static/frontend/index.html';
@@ -304,7 +305,7 @@
     }
 
     async function createNewCase() {
-      const name = prompt('Enter patient name (optional):', 'Anonymous');
+      const name = await modal.prompt('Enter patient name (optional):', 'Anonymous', 'Create New Case', 'Patient name');
       if (name === null) return;
 
       try {
@@ -314,7 +315,8 @@
         showToast(`Case #${result.id} created successfully`, 'success');
         
         // Offer to navigate to analysis module
-        if (confirm('Case created! Would you like to start with X-Ray analysis?')) {
+        const shouldNavigate = await modal.confirm('Case created! Would you like to start with X-Ray analysis?', 'Next Step', 'success');
+        if (shouldNavigate) {
           window.location.href = `/static/frontend/xray.html?case_id=${result.id}`;
         } else {
           location.reload();

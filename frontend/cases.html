@@ -134,14 +134,15 @@
     })();
 
     async function createNewCase() {
-      const name = prompt('Patient name (optional):', 'Anonymous');
+      const name = await modal.prompt('Patient name (optional):', 'Anonymous', 'Create New Case', 'Patient name');
       if (name === null) return;
       try {
         showLoading('Creating case...');
         const result = await createCase(name, null, null);
         hideLoading();
         showToast(`Case #${result.id} created`, 'success');
-        if (confirm('Start with X-Ray analysis?')) {
+        const shouldNavigate = await modal.confirm('Start with X-Ray analysis?', 'Next Step', 'success');
+        if (shouldNavigate) {
           window.location.href = `/static/frontend/xray.html?case_id=${result.id}`;
         } else {
           location.reload();
@@ -152,16 +153,29 @@
       }
     }
 
-    function addAnalysis(caseId) {
+    async function addAnalysis(caseId) {
+      const result = await modal.show({
+        type: 'question',
+        title: 'Select Analysis Module',
+        message: 'Choose which analysis module to use for this case:',
+        buttons: [
+          { text: 'Cancel', value: null, class: 'btn-secondary' },
+          { text: '🫁 X-Ray', value: '1', class: 'btn-primary' },
+          { text: '❤️ Heart', value: '2', class: 'btn-primary' },
+          { text: '💬 Symptoms', value: '3', class: 'btn-primary' },
+          { text: '📄 Documents', value: '4', class: 'btn-primary' }
+        ]
+      });
+      
       const modules = {
         '1': `/static/frontend/xray.html?case_id=${caseId}`,
         '2': `/static/frontend/heart.html?case_id=${caseId}`,
         '3': `/static/frontend/symptoms.html?case_id=${caseId}`,
         '4': `/static/frontend/documents.html?case_id=${caseId}`
       };
-      const choice = prompt('Select module:\n1=X-Ray\n2=Heart\n3=Symptoms\n4=Documents', '1');
-      if (modules[choice]) window.location.href = modules[choice];
+      if (modules[result]) window.location.href = modules[result];
     }
   </script>
+  <script src="/static/frontend/js/modal.js"></script>
 </body>
 </html>
