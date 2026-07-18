@@ -23,6 +23,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Ensure model files are present
+RUN ls -la ml/registry/ || echo "WARNING: No models in registry!"
+
 # Create necessary directories
 RUN mkdir -p \
     data/uploads \
