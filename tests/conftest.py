@@ -1,25 +1,32 @@
+import os
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+# Set environment variables BEFORE importing the app
+os.environ["SKIP_MODEL_LOAD_ON_STARTUP"] = "true"
+os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+os.environ["JWT_SECRET_KEY"] = "test-secret-key"
+os.environ["GROQ_API_KEY"] = "test-key"
+
 from api.main import app
-from api.db.session import get_db, engine
+from api.db.session import get_db
 from api.db.models import Base
-from api.core.config import settings
 
 # Test DB URL
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
-engine = create_engine(
+test_engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 @pytest.fixture(scope="session")
 def db_engine():
-    Base.metadata.create_all(bind=engine)
-    yield engine
-    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=test_engine)
+    yield test_engine
+    Base.metadata.drop_all(bind=test_engine)
 
 @pytest.fixture(scope="function")
 def db_session(db_engine):
