@@ -107,7 +107,7 @@ jobs:
         cache-to: type=gha,mode=max
         
     - name: Push to DockerHub
-      if: github.event_name == 'push' && secrets.DOCKERHUB_USERNAME != ''
+      if: github.event_name == 'push'
       uses: docker/build-push-action@v4
       with:
         context: .
@@ -115,3 +115,4 @@ jobs:
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/clinical-copilot:latest,${{ secrets.DOCKERHUB_USERNAME }}/clinical-copilot:${{ github.sha }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+      continue-on-error: true
