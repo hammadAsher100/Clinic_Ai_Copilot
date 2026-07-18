@@ -18,7 +18,7 @@ from api.core.logging_config import setup_logging
 from api.db.session import init_db
 
 # ── Routers ──────────────────────────────────────────────────────────────
-from api.routers import image, tabular, text, llm_copilot, hitl, reports, auth, documents
+from api.routers import image, tabular, text, llm_copilot, hitl, reports, auth, documents, admin
 
 setup_logging()
 logger = logging.getLogger("api")
@@ -94,6 +94,7 @@ app.include_router(llm_copilot.router)
 app.include_router(hitl.router)
 app.include_router(reports.router)
 app.include_router(documents.router)
+app.include_router(admin.router)
 
 
 # ── Health check ─────────────────────────────────────────────────────────
